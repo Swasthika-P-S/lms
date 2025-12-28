@@ -1,9 +1,9 @@
-class Courses {
+class Course {
   final String id;
   final String name;
   final String semesterId;
 
-  Courses({
+  Course({
     required this.id,
     required this.name,
     required this.semesterId,

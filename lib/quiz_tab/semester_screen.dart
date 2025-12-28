@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 import 'courses_screen.dart';
-
-// Simple Semester model (if you already have one, keep yours)
-class Semester {
-  final String id;
-  final String name;
-
-  Semester({required this.id, required this.name});
-}
+import 'semester.dart';
 
 class SemesterScreen extends StatelessWidget {
   const SemesterScreen({super.key});
@@ -19,6 +12,11 @@ class SemesterScreen extends StatelessWidget {
       Semester(id: 's1', name: 'Semester 1'),
       Semester(id: 's2', name: 'Semester 2'),
       Semester(id: 's3', name: 'Semester 3'),
+      Semester(id: 's4', name: 'Semester 4'),
+      Semester(id: 's5', name: 'Semester 5'),
+      Semester(id: 's6', name: 'Semester 6'),
+      Semester(id: 's7', name: 'Semester 7'),
+      Semester(id: 's8', name: 'Semester 8'),
     ];
 
     return Scaffold(
