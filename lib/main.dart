@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'app_tab/screens/course_listing_screen.dart';
+import 'app_tab/utils/colors.dart';
 import 'quiz_tab/home_screen.dart';
 import 'quiz_tab/courses_screen.dart';
 import 'quiz_tab/profile_screen.dart';
@@ -16,15 +18,14 @@ class LearnHubApp extends StatelessWidget {
     return MaterialApp(
       title: 'LearnHub',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0E27),
-        primaryColor: const Color(0xFF6C63FF),
-        fontFamily: 'Inter',
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: AppColors.background,
+        primaryColor: AppColors.primary,
+        cardColor: AppColors.card,
         colorScheme: ColorScheme.dark(
-          primary: const Color(0xFF6C63FF),
+          primary: AppColors.primary,
           secondary: const Color(0xFFFF6584),
-          surface: const Color(0xFF1A1F3A),
+          surface: AppColors.card,
         ),
       ),
       home: const MainScreen(),
@@ -42,12 +43,19 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const CoursesScreen(),
-    const ProfileScreen(),
-    const SettingsScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      const HomeScreen(),
+      const CourseListingScreen(), // From app_tab
+      const CoursesScreen(), // From quiz_tab
+      const ProfileScreen(),
+      const SettingsScreen(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +63,7 @@ class _MainScreenState extends State<MainScreen> {
       body: _screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1F3A),
+          color: AppColors.card,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
@@ -66,14 +74,15 @@ class _MainScreenState extends State<MainScreen> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(Icons.home_rounded, 'Home', 0),
-                _buildNavItem(Icons.book_rounded, 'Courses', 1),
-                _buildNavItem(Icons.person_rounded, 'Profile', 2),
-                _buildNavItem(Icons.settings_rounded, 'Settings', 3),
+                _buildNavItem(Icons.school_rounded, 'Listing', 1),
+                _buildNavItem(Icons.book_rounded, 'Courses', 2),
+                _buildNavItem(Icons.person_rounded, 'Profile', 3),
+                _buildNavItem(Icons.settings_rounded, 'Settings', 4),
               ],
             ),
           ),
@@ -91,18 +100,33 @@ class _MainScreenState extends State<MainScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C63FF).withOpacity(0.2) : Colors.transparent,
+          color: isSelected 
+              ? AppColors.primary.withOpacity(0.2) 
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          icon,
-          color: isSelected ? const Color(0xFF6C63FF) : Colors.grey,
-          size: 28,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? AppColors.primary : Colors.grey,
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppColors.primary : Colors.grey,
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
