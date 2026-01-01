@@ -5,8 +5,12 @@ import 'quiz_tab/home_screen.dart';
 import 'quiz_tab/courses_screen.dart';
 import 'quiz_tab/profile_screen.dart';
 import 'quiz_tab/settings_screen.dart';
+import 'assignment_tab/ui/dashboard_screen.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter bindings are initialized before any async operations
+  WidgetsFlutterBinding.ensureInitialized();
+  
   runApp(const LearnHubApp());
 }
 
@@ -16,7 +20,7 @@ class LearnHubApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'LearnHub',
+      title: 'LearnHub LMS',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: AppColors.background,
@@ -26,6 +30,19 @@ class LearnHubApp extends StatelessWidget {
           primary: AppColors.primary,
           secondary: const Color(0xFFFF6584),
           surface: AppColors.card,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppColors.card,
+          foregroundColor: Colors.white,
+        ),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: AppColors.card,
+          contentTextStyle: const TextStyle(color: Colors.white),
+          behavior: SnackBarBehavior.floating,
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
         ),
       ),
       home: const MainScreen(),
@@ -49,11 +66,15 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _screens = [
-      const HomeScreen(),
-      const CourseListingScreen(), // From app_tab
-      const CoursesScreen(), // From quiz_tab
-      const ProfileScreen(),
-      const SettingsScreen(),
+      HomeScreen(), // Quiz tab home
+      CourseListingScreen(), // App tab - course listing
+      CoursesScreen(), // Quiz tab - courses
+      DashboardScreen( // Assignment tab - dashboard
+        userName: 'Hana',
+        courseId: 'course_flutter_basics',
+      ),
+      ProfileScreen(), // Quiz tab - profile
+      SettingsScreen(), // Quiz tab - settings
     ];
   }
 
@@ -74,15 +95,16 @@ class _MainScreenState extends State<MainScreen> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(Icons.home_rounded, 'Home', 0),
-                _buildNavItem(Icons.school_rounded, 'Listing', 1),
-                _buildNavItem(Icons.book_rounded, 'Courses', 2),
-                _buildNavItem(Icons.person_rounded, 'Profile', 3),
-                _buildNavItem(Icons.settings_rounded, 'Settings', 4),
+                _buildNavItem(Icons.school_rounded, 'Courses', 1),
+                _buildNavItem(Icons.book_rounded, 'Library', 2),
+                _buildNavItem(Icons.assignment_rounded, 'Tasks', 3),
+                _buildNavItem(Icons.person_rounded, 'Profile', 4),
+                _buildNavItem(Icons.settings_rounded, 'Settings', 5),
               ],
             ),
           ),
@@ -100,7 +122,7 @@ class _MainScreenState extends State<MainScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected 
               ? AppColors.primary.withOpacity(0.2) 
@@ -113,14 +135,14 @@ class _MainScreenState extends State<MainScreen> {
             Icon(
               icon,
               color: isSelected ? AppColors.primary : Colors.grey,
-              size: 24,
+              size: 22,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? AppColors.primary : Colors.grey,
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
