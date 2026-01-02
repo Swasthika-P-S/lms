@@ -18,14 +18,29 @@ class LessonItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: AppColors.getCard(context),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDarkMode 
+                ? Colors.white.withOpacity(0.1)
+                : Colors.grey.withOpacity(0.2),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDarkMode ? 0.2 : 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -35,7 +50,9 @@ class LessonItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: lesson.isCompleted
                     ? AppColors.primary
-                    : Colors.white.withOpacity(0.1),
+                    : (isDarkMode 
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.grey.withOpacity(0.2)),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -43,8 +60,8 @@ class LessonItem extends StatelessWidget {
                     ? const Icon(Icons.check, color: Colors.white, size: 20)
                     : Text(
                         '${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black87,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -57,10 +74,10 @@ class LessonItem extends StatelessWidget {
                 children: [
                   Text(
                     lesson.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimary(context),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -69,14 +86,14 @@ class LessonItem extends StatelessWidget {
                       Icon(
                         Icons.play_circle_outline,
                         size: 14,
-                        color: AppColors.textSecondary,
+                        color: AppColors.getTextSecondary(context),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         lesson.duration,
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: AppColors.getTextSecondary(context),
                         ),
                       ),
                       if (lesson.isDownloaded) ...[
@@ -97,7 +114,7 @@ class LessonItem extends StatelessWidget {
                 lesson.isDownloaded ? Icons.download_done : Icons.download,
                 color: lesson.isDownloaded
                     ? AppColors.primary
-                    : AppColors.textSecondary,
+                    : AppColors.getTextSecondary(context),
               ),
               onPressed: onDownload,
             ),

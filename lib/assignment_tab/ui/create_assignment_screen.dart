@@ -21,44 +21,176 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Create Assignment'), backgroundColor: AppColors.card),
+      backgroundColor: AppColors.getBackground(context),
+      appBar: AppBar(
+        title: const Text('Create Assignment'),
+        backgroundColor: AppColors.getCard(context),
+        foregroundColor: AppColors.getTextPrimary(context),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(AppConstants.spacing),
           children: [
+            // Title Field
             TextFormField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
+              style: TextStyle(color: AppColors.getTextPrimary(context)),
+              decoration: InputDecoration(
+                labelText: 'Title',
+                labelStyle: TextStyle(color: AppColors.getTextSecondary(context)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderSide: BorderSide(
+                    color: isDarkMode 
+                        ? Colors.white.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.5),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderSide: BorderSide(
+                    color: isDarkMode 
+                        ? Colors.white.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+                filled: true,
+                fillColor: AppColors.getCard(context),
+              ),
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: AppConstants.spacing),
+            
+            // Description Field
             TextFormField(
               controller: _descController,
-              decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
+              style: TextStyle(color: AppColors.getTextPrimary(context)),
+              decoration: InputDecoration(
+                labelText: 'Description',
+                labelStyle: TextStyle(color: AppColors.getTextSecondary(context)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderSide: BorderSide(
+                    color: isDarkMode 
+                        ? Colors.white.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.5),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderSide: BorderSide(
+                    color: isDarkMode 
+                        ? Colors.white.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+                filled: true,
+                fillColor: AppColors.getCard(context),
+              ),
               maxLines: 3,
               validator: (v) => v!.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: AppConstants.spacing),
+            
+            // Max Score Field
             TextFormField(
               controller: _scoreController,
-              decoration: const InputDecoration(labelText: 'Max Score', border: OutlineInputBorder()),
+              style: TextStyle(color: AppColors.getTextPrimary(context)),
+              decoration: InputDecoration(
+                labelText: 'Max Score',
+                labelStyle: TextStyle(color: AppColors.getTextSecondary(context)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderSide: BorderSide(
+                    color: isDarkMode 
+                        ? Colors.white.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.5),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderSide: BorderSide(
+                    color: isDarkMode 
+                        ? Colors.white.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+                filled: true,
+                fillColor: AppColors.getCard(context),
+              ),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: AppConstants.spacing),
-            ListTile(
-              title: const Text('Deadline'),
-              subtitle: Text(DateFormat('MMM dd, yyyy HH:mm').format(_deadline)),
-              trailing: const Icon(Icons.calendar_today, color: AppColors.warning),
-              onTap: _pickDeadline,
+            
+            // Deadline Picker
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.getCard(context),
+                borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                border: Border.all(
+                  color: isDarkMode 
+                      ? Colors.white.withOpacity(0.3)
+                      : Colors.grey.withOpacity(0.5),
+                ),
+              ),
+              child: ListTile(
+                title: Text(
+                  'Deadline',
+                  style: TextStyle(
+                    color: AppColors.getTextPrimary(context),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  DateFormat('MMM dd, yyyy HH:mm').format(_deadline),
+                  style: TextStyle(
+                    color: AppColors.getTextSecondary(context),
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.calendar_today,
+                  color: AppColors.primary,
+                ),
+                onTap: _pickDeadline,
+              ),
             ),
-            const SizedBox(height: AppConstants.spacing),
+            const SizedBox(height: 24),
+            
+            // Create Button
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                ),
+                elevation: 2,
+              ),
               onPressed: _create,
-              child: const Text('Create Assignment'),
+              child: const Text(
+                'Create Assignment',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -80,7 +212,13 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       );
       if (time != null) {
         setState(() {
-          _deadline = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+          _deadline = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
         });
       }
     }
@@ -99,6 +237,14 @@ class _CreateAssignmentScreenState extends State<CreateAssignmentScreen> {
       createdBy: 'currentUser',
     );
     await AssignmentService().createAssignment(assignment);
-    Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    _scoreController.dispose();
+    super.dispose();
   }
 }

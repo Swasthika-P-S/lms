@@ -64,18 +64,32 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.getCard(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(
+            Icons.arrow_back,
+            color: AppColors.getTextPrimary(context),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(currentLesson.title, style: const TextStyle(fontSize: 16)),
+        title: Text(
+          currentLesson.title,
+          style: TextStyle(
+            fontSize: 16,
+            color: AppColors.getTextPrimary(context),
+          ),
+        ),
         actions: [
           IconButton(
-            icon: Icon(showNotes ? Icons.videocam : Icons.notes),
+            icon: Icon(
+              showNotes ? Icons.videocam : Icons.notes,
+              color: AppColors.getTextPrimary(context),
+            ),
             onPressed: () {
               setState(() {
                 showNotes = !showNotes;
@@ -86,8 +100,12 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
       ),
       body: Column(
         children: [
-          Expanded(child: showNotes ? _buildNotesView() : _buildVideoPlayer()),
-          _buildControlBar(),
+          Expanded(
+            child: showNotes 
+                ? _buildNotesView(context, isDarkMode) 
+                : _buildVideoPlayer(),
+          ),
+          _buildControlBar(context, isDarkMode),
         ],
       ),
     );
@@ -114,10 +132,13 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              currentLesson.title,
-              style: const TextStyle(fontSize: 18, color: Colors.white),
-              textAlign: TextAlign.center,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                currentLesson.title,
+                style: const TextStyle(fontSize: 18, color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -143,20 +164,20 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
     );
   }
 
-  Widget _buildNotesView() {
+  Widget _buildNotesView(BuildContext context, bool isDarkMode) {
     return Container(
       padding: const EdgeInsets.all(20),
-      color: AppColors.background,
+      color: AppColors.getBackground(context),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Lesson Notes',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: AppColors.getTextPrimary(context),
               ),
             ),
             const SizedBox(height: 20),
@@ -166,31 +187,33 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
                   : currentLesson.notes,
               style: TextStyle(
                 fontSize: 16,
-                color: AppColors.textPrimary.withOpacity(0.8),
+                color: isDarkMode 
+                    ? Colors.white.withOpacity(0.8)
+                    : Colors.black.withOpacity(0.8),
                 height: 1.6,
               ),
             ),
             const SizedBox(height: 30),
-            const Text(
+            Text(
               'Key Takeaways',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: AppColors.getTextPrimary(context),
               ),
             ),
             const SizedBox(height: 16),
-            _buildBulletPoint('Understanding core concepts'),
-            _buildBulletPoint('Practical implementation strategies'),
-            _buildBulletPoint('Best practices and tips'),
-            _buildBulletPoint('Common pitfalls to avoid'),
+            _buildBulletPoint(context, 'Understanding core concepts', isDarkMode),
+            _buildBulletPoint(context, 'Practical implementation strategies', isDarkMode),
+            _buildBulletPoint(context, 'Best practices and tips', isDarkMode),
+            _buildBulletPoint(context, 'Common pitfalls to avoid', isDarkMode),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBulletPoint(String text) {
+  Widget _buildBulletPoint(BuildContext context, String text, bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -211,7 +234,9 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
               text,
               style: TextStyle(
                 fontSize: 16,
-                color: AppColors.textPrimary.withOpacity(0.8),
+                color: isDarkMode 
+                    ? Colors.white.withOpacity(0.8)
+                    : Colors.black.withOpacity(0.8),
               ),
             ),
           ),
@@ -220,58 +245,70 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
     );
   }
 
-  Widget _buildControlBar() {
+  Widget _buildControlBar(BuildContext context, bool isDarkMode) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.getCard(context),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: currentLesson.isCompleted ? null : _markAsComplete,
-              icon: Icon(
-                currentLesson.isCompleted
-                    ? Icons.check_circle
-                    : Icons.check_circle_outline,
-              ),
-              label: Text(
-                currentLesson.isCompleted ? 'Completed' : 'Mark as Complete',
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: currentLesson.isCompleted
-                    ? AppColors.success
-                    : AppColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+      child: SafeArea(
+        child: Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: currentLesson.isCompleted ? null : _markAsComplete,
+                icon: Icon(
+                  currentLesson.isCompleted
+                      ? Icons.check_circle
+                      : Icons.check_circle_outline,
+                  color: Colors.white,
+                ),
+                label: Text(
+                  currentLesson.isCompleted ? 'Completed' : 'Mark as Complete',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: currentLesson.isCompleted
+                      ? AppColors.success
+                      : AppColors.primary,
+                  disabledBackgroundColor: AppColors.success.withOpacity(0.7),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          IconButton(
-            onPressed: _handleDownload,
-            icon: Icon(
-              currentLesson.isDownloaded ? Icons.download_done : Icons.download,
-              color: currentLesson.isDownloaded
-                  ? AppColors.primary
-                  : AppColors.textPrimary,
+            const SizedBox(width: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: isDarkMode 
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.grey.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                onPressed: _handleDownload,
+                icon: Icon(
+                  currentLesson.isDownloaded 
+                      ? Icons.download_done 
+                      : Icons.download,
+                  color: currentLesson.isDownloaded
+                      ? AppColors.primary
+                      : AppColors.getTextPrimary(context),
+                ),
+                padding: const EdgeInsets.all(14),
+              ),
             ),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.1),
-              padding: const EdgeInsets.all(14),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

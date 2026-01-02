@@ -8,6 +8,8 @@ class CoursesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -15,12 +17,12 @@ class CoursesScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Quiz Center',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: isDarkMode ? Colors.white : Colors.black87,
                 ),
               ),
               const SizedBox(height: 8),
@@ -28,7 +30,7 @@ class CoursesScreen extends StatelessWidget {
                 'Test your knowledge across different subjects',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[400],
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                 ),
               ),
               const SizedBox(height: 30),
@@ -38,7 +40,7 @@ class CoursesScreen extends StatelessWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: 15,
                     mainAxisSpacing: 15,
-                    childAspectRatio: 1.3, // Changed from 0.85 to make cards more compact
+                    childAspectRatio: 1.3,
                   ),
                   itemCount: coursesData.length,
                   itemBuilder: (context, index) {
@@ -89,12 +91,12 @@ class CoursesScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8), // Reduced from 10
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(course.icon, color: Colors.white, size: 20), // Reduced from 24
+                  child: Icon(course.icon, color: Colors.white, size: 20),
                 ),
                 Icon(
                   Icons.chevron_right_rounded,
@@ -110,25 +112,25 @@ class CoursesScreen extends StatelessWidget {
                   course.name,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 22, // Reduced from 24
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4), // Reduced from 5
+                const SizedBox(height: 4),
                 Text(
                   course.fullName,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withOpacity(0.9),
                     fontSize: 12,
                   ),
-                  maxLines: 1, // Changed from 2
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8), // Reduced from 10
+                const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

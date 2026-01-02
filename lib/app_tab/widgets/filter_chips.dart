@@ -15,8 +15,11 @@ class FilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
       height: 50,
+      color: AppColors.getBackground(context),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -31,12 +34,26 @@ class FilterChips extends StatelessWidget {
               onSelected: (selected) {
                 onFilterSelected(filters[index]);
               },
-              backgroundColor: AppColors.card,
+              backgroundColor: AppColors.getCard(context),
               selectedColor: AppColors.primary,
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.white70,
+                color: isSelected 
+                    ? Colors.white 
+                    : (isDarkMode 
+                        ? Colors.white70 
+                        : Colors.black54),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
+              side: BorderSide(
+                color: isSelected 
+                    ? AppColors.primary 
+                    : (isDarkMode 
+                        ? Colors.white.withOpacity(0.1)
+                        : Colors.grey.withOpacity(0.3)),
+                width: 1,
+              ),
+              elevation: isDarkMode ? 0 : 2,
+              shadowColor: Colors.black.withOpacity(0.1),
             ),
           );
         },

@@ -13,7 +13,10 @@ class QuizOptionsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
+      backgroundColor: isDarkMode ? const Color(0xFF0A0E27) : Colors.grey[50],
       body: SafeArea(
         child: Column(
           children: [
@@ -82,9 +85,22 @@ class QuizOptionsScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1A1F3A),
+                          color: isDarkMode 
+                              ? const Color(0xFF1A1F3A) 
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white.withOpacity(0.1)),
+                          border: Border.all(
+                            color: isDarkMode 
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.grey.withOpacity(0.2),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(isDarkMode ? 0.2 : 0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
@@ -92,29 +108,39 @@ class QuizOptionsScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
                                 _buildStatItem(
+                                  context,
                                   Icons.quiz_rounded,
                                   '${topic.totalQuestions}',
                                   'Questions',
+                                  isDarkMode,
                                 ),
                                 Container(
                                   height: 30,
                                   width: 1,
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: isDarkMode 
+                                      ? Colors.white.withOpacity(0.1)
+                                      : Colors.grey.withOpacity(0.3),
                                 ),
                                 _buildStatItem(
+                                  context,
                                   Icons.check_circle_rounded,
                                   '${topic.completedQuestions}',
                                   'Done',
+                                  isDarkMode,
                                 ),
                                 Container(
                                   height: 30,
                                   width: 1,
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: isDarkMode 
+                                      ? Colors.white.withOpacity(0.1)
+                                      : Colors.grey.withOpacity(0.3),
                                 ),
                                 _buildStatItem(
+                                  context,
                                   Icons.school_rounded,
                                   topic.difficulty,
                                   'Level',
+                                  isDarkMode,
                                 ),
                               ],
                             ),
@@ -143,8 +169,8 @@ class QuizOptionsScreen extends StatelessWidget {
                                     const SizedBox(width: 6),
                                     Text(
                                       'Best: ${topic.score}%',
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: isDarkMode ? Colors.white : Colors.black87,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -157,12 +183,12 @@ class QuizOptionsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 15),
-                      const Text(
+                      Text(
                         'Choose Option',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: isDarkMode ? Colors.white : Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -208,7 +234,7 @@ class QuizOptionsScreen extends StatelessWidget {
                         title: 'Practice Mode',
                         gradient: const LinearGradient(
                           colors: [Color(0xFF00D4FF), Color(0xFF0099CC)],
-                        ),
+                          ),
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -230,15 +256,21 @@ class QuizOptionsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(IconData icon, String value, String label) {
+  Widget _buildStatItem(
+    BuildContext context,
+    IconData icon,
+    String value,
+    String label,
+    bool isDarkMode,
+  ) {
     return Column(
       children: [
         Icon(icon, color: const Color(0xFF6C63FF), size: 16),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black87,
             fontSize: 13,
             fontWeight: FontWeight.bold,
           ),
@@ -246,7 +278,7 @@ class QuizOptionsScreen extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.grey[400],
+            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             fontSize: 9,
           ),
         ),

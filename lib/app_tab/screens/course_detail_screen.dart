@@ -70,36 +70,67 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
+      backgroundColor: AppColors.getBackground(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.getCard(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(
+            Icons.arrow_back,
+            color: AppColors.getTextPrimary(context),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.share), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.bookmark_border), onPressed: () {}),
+          IconButton(
+            icon: Icon(
+              Icons.share,
+              color: AppColors.getTextPrimary(context),
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Share feature coming soon!')),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.bookmark_border,
+              color: AppColors.getTextPrimary(context),
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Bookmark feature coming soon!')),
+              );
+            },
+          ),
         ],
       ),
       body: Column(
         children: [
-          _buildCourseHeader(),
+          _buildCourseHeader(context, isDarkMode),
           Expanded(
             child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildLessonList(),
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                    ),
+                  )
+                : _buildLessonList(context),
           ),
         ],
       ),
-      bottomNavigationBar: _buildEnrollButton(),
+      bottomNavigationBar: _buildEnrollButton(context, isDarkMode),
     );
   }
 
-  Widget _buildCourseHeader() {
+  Widget _buildCourseHeader(BuildContext context, bool isDarkMode) {
     return Container(
       padding: const EdgeInsets.all(20),
+      color: AppColors.getCard(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -126,10 +157,10 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   children: [
                     Text(
                       currentCourse.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: AppColors.getTextPrimary(context),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -137,7 +168,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                       'By ${currentCourse.instructor}',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: AppColors.getTextSecondary(context),
                       ),
                     ),
                   ],
@@ -146,16 +177,25 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               _buildInfoChip(
+                context,
                 Icons.play_circle_outline,
                 '${currentCourse.totalLessons} Lessons',
               ),
-              const SizedBox(width: 12),
-              _buildInfoChip(Icons.access_time, currentCourse.duration),
-              const SizedBox(width: 12),
-              _buildInfoChip(Icons.signal_cellular_alt, 'Intermediate'),
+              _buildInfoChip(
+                context,
+                Icons.access_time,
+                currentCourse.duration,
+              ),
+              _buildInfoChip(
+                context,
+                Icons.signal_cellular_alt,
+                'Intermediate',
+              ),
             ],
           ),
         ],
@@ -163,12 +203,21 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String label) {
+  Widget _buildInfoChip(BuildContext context, IconData icon, String label) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: isDarkMode 
+            ? AppColors.background 
+            : Colors.grey[100],
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDarkMode 
+              ? Colors.white.withOpacity(0.1)
+              : Colors.grey.withOpacity(0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -177,16 +226,19 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.getTextPrimary(context),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLessonList() {
+  Widget _buildLessonList(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(color: AppColors.background),
+      color: AppColors.getBackground(context),
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: lessons.length,
@@ -212,75 +264,55 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     );
   }
 
-  Widget _buildEnrollButton() {
-    if (currentCourse.isEnrolled) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: ElevatedButton(
-          onPressed: () {
-            final firstIncompleteLesson = lessons.firstWhere(
-              (l) => !l.isCompleted,
-              orElse: () => lessons.first,
-            );
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ContentViewerScreen(
-                  lesson: firstIncompleteLesson,
-                  course: currentCourse,
-                ),
-              ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text(
-            'Continue Learning',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-      );
-    }
-
+  Widget _buildEnrollButton(BuildContext context, bool isDarkMode) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.getCard(context),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
         ],
       ),
-      child: ElevatedButton(
-        onPressed: _enrollInCourse,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+      child: SafeArea(
+        child: ElevatedButton(
+          onPressed: currentCourse.isEnrolled
+              ? () {
+                  if (lessons.isEmpty) return;
+                  final firstIncompleteLesson = lessons.firstWhere(
+                    (l) => !l.isCompleted,
+                    orElse: () => lessons.first,
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ContentViewerScreen(
+                        lesson: firstIncompleteLesson,
+                        course: currentCourse,
+                      ),
+                    ),
+                  );
+                }
+              : _enrollInCourse,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
-        ),
-        child: const Text(
-          'Enroll Now',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          child: Text(
+            currentCourse.isEnrolled ? 'Continue Learning' : 'Enroll Now',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
         ),
       ),
     );

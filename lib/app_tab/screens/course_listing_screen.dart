@@ -59,25 +59,43 @@ class _CourseListingScreenState extends State<CourseListingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
+      backgroundColor: AppColors.getBackground(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.getCard(context),
         elevation: 0,
-        title: const Text(
+        automaticallyImplyLeading: false,
+        title: Text(
           'Courses',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.getTextPrimary(context),
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: Icon(
+              Icons.search,
+              color: AppColors.getTextPrimary(context),
+            ),
             onPressed: () {
-              // Implement search
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Search feature coming soon!')),
+              );
             },
           ),
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: Icon(
+              Icons.filter_list,
+              color: AppColors.getTextPrimary(context),
+            ),
             onPressed: () {
-              // Implement filter
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Filter feature coming soon!')),
+              );
             },
           ),
         ],
@@ -96,29 +114,66 @@ class _CourseListingScreenState extends State<CourseListingScreen> {
           ),
           Expanded(
             child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                    onRefresh: _loadCourses,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: filteredCourses.length,
-                      itemBuilder: (context, index) {
-                        return CourseCard(
-                          course: filteredCourses[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CourseDetailScreen(
-                                  course: filteredCourses[index],
-                                ),
-                              ),
-                            ).then((_) => _loadCourses());
-                          },
-                        );
-                      },
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
                     ),
-                  ),
+                  )
+                : filteredCourses.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.school_outlined,
+                              size: 80,
+                              color: isDarkMode 
+                                  ? Colors.grey[700] 
+                                  : Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No courses found',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: AppColors.getTextPrimary(context),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Try changing your filter',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.getTextSecondary(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadCourses,
+                        color: AppColors.primary,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: filteredCourses.length,
+                          itemBuilder: (context, index) {
+                            return CourseCard(
+                              course: filteredCourses[index],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CourseDetailScreen(
+                                      course: filteredCourses[index],
+                                    ),
+                                  ),
+                                ).then((_) => _loadCourses());
+                              },
+                            );
+                          },
+                        ),
+                      ),
           ),
         ],
       ),

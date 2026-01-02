@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'models.dart';
 import 'quiz_options_screen.dart';
+
 class CourseDetailsScreen extends StatelessWidget {
   final Course course;
 
@@ -8,6 +9,8 @@ class CourseDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -77,16 +80,17 @@ class CourseDetailsScreen extends StatelessWidget {
             // Topics List
             Expanded(
               child: Container(
+                color: isDarkMode ? const Color(0xFF0A0E27) : Colors.grey[50],
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Choose a Topic',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: isDarkMode ? Colors.white : Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -94,7 +98,7 @@ class CourseDetailsScreen extends StatelessWidget {
                       'Select a topic to start practicing',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey[400],
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -103,7 +107,7 @@ class CourseDetailsScreen extends StatelessWidget {
                         itemCount: course.topics.length,
                         itemBuilder: (context, index) {
                           final topic = course.topics[index];
-                          return _buildTopicCard(context, topic, course);
+                          return _buildTopicCard(context, topic, course, isDarkMode);
                         },
                       ),
                     ),
@@ -117,18 +121,27 @@ class CourseDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTopicCard(BuildContext context, Topic topic, Course course) {
+  Widget _buildTopicCard(BuildContext context, Topic topic, Course course, bool isDarkMode) {
     final progressPercent = (topic.progress * 100).toInt();
     
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1F3A),
+        color: isDarkMode ? const Color(0xFF1A1F3A) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: isDarkMode 
+              ? Colors.white.withOpacity(0.1) 
+              : Colors.grey.withOpacity(0.3),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDarkMode ? 0.2 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -158,8 +171,8 @@ class CourseDetailsScreen extends StatelessWidget {
                         children: [
                           Text(
                             topic.name,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black87,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -205,14 +218,14 @@ class CourseDetailsScreen extends StatelessWidget {
                         Text(
                           'Progress',
                           style: TextStyle(
-                            color: Colors.grey[400],
+                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                             fontSize: 12,
                           ),
                         ),
                         Text(
                           '$progressPercent%',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black87,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -224,7 +237,9 @@ class CourseDetailsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                       child: LinearProgressIndicator(
                         value: topic.progress,
-                        backgroundColor: Colors.grey[800],
+                        backgroundColor: isDarkMode 
+                            ? Colors.grey[800] 
+                            : Colors.grey[300],
                         valueColor: AlwaysStoppedAnimation<Color>(
                           course.gradientColors[0],
                         ),
@@ -257,8 +272,8 @@ class CourseDetailsScreen extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           'Last Score: ${topic.score}%',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black87,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),

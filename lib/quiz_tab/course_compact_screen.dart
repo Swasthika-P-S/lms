@@ -23,7 +23,7 @@ class CompactCourseCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 140, // Reduced from ~280px to 140px
+        height: 140,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: gradientColors,
@@ -31,6 +31,13 @@ class CompactCourseCard extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: gradientColors[0].withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Stack(
           children: [
@@ -77,7 +84,7 @@ class CompactCourseCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -117,31 +124,38 @@ class QuizCenterCompact extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
+      backgroundColor: isDarkMode ? const Color(0xFF0A0E27) : Colors.grey[50],
+      appBar: AppBar(
+        title: const Text('Quiz Center'),
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            const Padding(
-              padding: EdgeInsets.all(20),
+            Padding(
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Quiz Center',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: isDarkMode ? Colors.white : Colors.black87,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     'Test your knowledge across different subjects',
                     style: TextStyle(
-                      color: Colors.grey,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                       fontSize: 14,
                     ),
                   ),
@@ -156,7 +170,7 @@ class QuizCenterCompact extends StatelessWidget {
                   crossAxisCount: 2,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 1.3, // Adjusted for compact cards
+                  childAspectRatio: 1.3,
                   children: [
                     CompactCourseCard(
                       title: 'DSA',
