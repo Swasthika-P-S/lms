@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 
 /// Firebase service for initializing and accessing Firebase instances
 class FirebaseService {
@@ -27,9 +28,9 @@ class FirebaseService {
         options: _getFirebaseOptions(),
       );
       
-      // Enable offline persistence
-      firestore.settings = const Settings(
-        persistenceEnabled: true,
+      // Enable offline persistence (disabled for Web due to known issues with multiple tabs)
+      firestore.settings = Settings(
+        persistenceEnabled: !kIsWeb,
         cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
       );
       

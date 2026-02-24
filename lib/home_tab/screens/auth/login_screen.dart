@@ -42,9 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
       _passwordController.text.trim(),
     );
 
-    setState(() => _isLoading = false);
-
     if (!success && mounted) {
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(firebaseAuthProvider.errorMessage ?? 'Login failed'),
@@ -62,9 +61,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final firebaseAuthProvider = context.read<FirebaseAuthProvider>();
     final success = await firebaseAuthProvider.signInWithGoogle();
 
-    setState(() => _isLoading = false);
-
     if (!success && mounted) {
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(firebaseAuthProvider.errorMessage ?? 'Google Sign-In failed'),

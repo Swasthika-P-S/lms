@@ -18,6 +18,7 @@ import 'package:learnhub/screens/admin/admin_dashboard_screen.dart';
 import 'services/firebase_service.dart';
 import 'providers/firebase_auth_provider.dart';
 import 'providers/chatbot_provider.dart';
+import 'services/data_seeder.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -92,6 +93,15 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // One-time seed for DSA questions
+    DataSeeder.seedDsaQuizzes().then((_) {
+      print('✅ DSA Data Seeded or updated');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

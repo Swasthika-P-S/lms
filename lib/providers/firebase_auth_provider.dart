@@ -37,7 +37,7 @@ class FirebaseAuthProvider extends ChangeNotifier {
         try {
           // Fetch user data from Firestore with timeout
           _userModel = await _firestoreService.getUserData(user.uid)
-              .timeout(const Duration(seconds: 15), onTimeout: () {
+              .timeout(const Duration(seconds: 20), onTimeout: () {
                 print('⚠️ Auth listener: Firestore fetch timed out. Using cached data if available.');
                 return null;
               });
@@ -60,6 +60,12 @@ class FirebaseAuthProvider extends ChangeNotifier {
     
     try {
       final userCredential = await _authService.signInWithGoogle();
+      if (userCredential?.user != null) {
+        _user = userCredential!.user;
+        // Fetch model data immediately to avoid flash of 'student' role
+        _userModel = await _firestoreService.getUserData(_user!.uid)
+            .timeout(const Duration(seconds: 10), onTimeout: () => null);
+      }
       _setLoading(false);
       return userCredential != null;
     } catch (e) {
@@ -75,7 +81,12 @@ class FirebaseAuthProvider extends ChangeNotifier {
     _errorMessage = null;
     
     try {
-      await _authService.signInWithEmailPassword(email, password);
+      final userCredential = await _authService.signInWithEmailPassword(email, password);
+      if (userCredential.user != null) {
+        _user = userCredential.user;
+        _userModel = await _firestoreService.getUserData(_user!.uid)
+            .timeout(const Duration(seconds: 10), onTimeout: () => null);
+      }
       _setLoading(false);
       return true;
     } catch (e) {

@@ -40,11 +40,14 @@ class AuthService {
       
       // Sign in to Firebase with the Google credential
       final UserCredential userCredential = 
-          await _auth.signInWithCredential(credential);
+          await _auth.signInWithCredential(credential).timeout(const Duration(seconds: 20));
       
       // Create/update user document in Firestore
       if (userCredential.user != null) {
-        await _createOrUpdateUserDocument(userCredential.user!);
+        await _createOrUpdateUserDocument(userCredential.user!)
+            .timeout(const Duration(seconds: 20), onTimeout: () {
+          print('⚠️ Firestore document update timed out');
+        });
       }
       
       print('✅ Google Sign-In successful: ${userCredential.user?.email}');
@@ -142,7 +145,7 @@ class AuthService {
             'theme': 'system',
             'notifications': true,
           },
-        });
+        }).timeout(const Duration(seconds: 20));
         print('✅ Created new user document for ${user.uid} with role: $role');
       } else {
         // Update existing user but preserve role if it exists

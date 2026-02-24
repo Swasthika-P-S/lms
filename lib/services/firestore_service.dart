@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../models/progress_model.dart';
 import '../models/problem_model.dart';
+import '../models/question_model.dart';
 
 /// Firestore database service for CRUD operations
 class FirestoreService {
@@ -16,10 +17,9 @@ class FirestoreService {
   /// Get user data
   Future<UserModel?> getUserData(String userId) async {
     try {
-      // Set a timeout for the network request
-      final doc = await usersCollection.doc(userId).get(
-        const GetOptions(source: Source.serverAndCache),
-      ).timeout(const Duration(seconds: 10));
+      // Use default behavior for better web compatibility
+      final doc = await usersCollection.doc(userId).get()
+          .timeout(const Duration(seconds: 20));
       
       if (doc.exists) {
         return UserModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
@@ -237,6 +237,80 @@ class FirestoreService {
       return snapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
       print('❌ Error getting chat history: $e');
+      return [];
+    }
+  }
+
+  /// Get quiz questions for a topic
+  Future<List<QuestionModel>> getQuestions(String topicId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('quizzes')
+          .doc(topicId)
+          .collection('questions')
+          .get()
+          .timeout(const Duration(seconds: 20));
+
+      if (snapshot.docs.isEmpty) {
+        print('⚠️ No questions found for topic: $topicId');
+        return [];
+      }
+
+      return snapshot.docs
+          .map((doc) => QuestionModel.fromFirestore(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      print('❌ Error getting quiz questions: $e');
+      return [];
+    }
+  }
+
+  /// Submit quiz result
+  Future<void> submitQuizResult(String userId, String topicId, int score) async {
+    try {
+      final progressRef = usersCollection
+          .doc(userId)
+          .collection('progress')
+          .doc(topicId);
+
+      await progressRef.set({
+        'quizTaken': true,
+        'score': score,
+        'lastQuizDate': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true)).timeout(const Duration(seconds: 10));
+
+      print('✅ Quiz result submitted: $score% for $topicId');
+    } catch (e) {
+      print('❌ Error submitting quiz result: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a question from a topic
+  Future<void> deleteQuestion(String topicId, String questionId) async {
+    try {
+      await _firestore
+          .collection('quizzes')
+          .doc(topicId)
+          .collection('questions')
+          .doc(questionId)
+          .delete()
+          .timeout(const Duration(seconds: 10));
+      print('✅ Deleted question $questionId from $topicId');
+    } catch (e) {
+      print('❌ Error deleting question: $e');
+      rethrow;
+    }
+  }
+
+  /// Get list of all topics that have quizzes
+  Future<List<String>> getAllQuizTopics() async {
+    try {
+      final snapshot = await _firestore.collection('quizzes').get()
+          .timeout(const Duration(seconds: 10));
+      return snapshot.docs.map((doc) => doc.id).toList();
+    } catch (e) {
+      print('❌ Error getting quiz topics: $e');
       return [];
     }
   }

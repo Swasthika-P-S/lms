@@ -4,6 +4,7 @@ import '../../providers/firebase_auth_provider.dart';
 import '../../home_tab/utils/theme.dart';
 import '../../app_tab/utils/colors.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'manage_questions_screen.dart';
 
 /// Admin Dashboard Screen with user management and analytics
 class AdminDashboardScreen extends StatefulWidget {
@@ -178,6 +179,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      _buildActionCard(
+                        context,
+                        icon: Icons.quiz_rounded,
+                        title: 'Manage Quiz Questions',
+                        subtitle: 'Add, edit or delete quiz questions',
+                        color: AppTheme.accentPink,
+                        isDark: isDark,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ManageQuestionsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
                       _buildActionCard(
                         context,
                         icon: Icons.person_add,

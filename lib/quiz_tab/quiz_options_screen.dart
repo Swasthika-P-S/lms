@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'models.dart';
+import 'quiz_screen.dart';
 
 class QuizOptionsScreen extends StatelessWidget {
   final Topic topic;
@@ -199,11 +200,13 @@ class QuizOptionsScreen extends StatelessWidget {
                         title: topic.quizTaken ? 'Retake Quiz' : 'Start Quiz',
                         gradient: LinearGradient(colors: course.gradientColors),
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Starting quiz...'),
-                              duration: Duration(seconds: 1),
-                              backgroundColor: Color(0xFF6C63FF),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => QuizScreen(
+                                topic: topic,
+                                course: course,
+                              ),
                             ),
                           );
                         },
