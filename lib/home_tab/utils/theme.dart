@@ -1,29 +1,40 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Color Palette matching your design
-  static const primaryPurple = Color(0xFF6366F1);
-  static const darkBackground = Color(0xFF0F0A1F);
-  static const darkCard = Color(0xFF1A1432);
-  static const accentOrange = Color(0xFFFF6B35);
-  static const accentPink = Color(0xFFEC4899);
-  static const accentCyan = Color(0xFF06B6D4);
-  static const accentGreen = Color(0xFF10B981);
+  // Professional Terracotta Color Palette
+  static const primaryTerracotta = Color(0xFFD4705F); // Mild terracotta
+  static const darkTerracotta = Color(0xFFB85840); // Deeper terracotta
+  static const lightTerracotta = Color(0xFFE8A598); // Light terracotta
+  
+  static const darkBackground = Color(0xFF1C1410); // Warm dark brown
+  static const darkCard = Color(0xFF2A1F1A); // Dark warm card
+  
+  static const accentGold = Color(0xFFD4A574); // Warm gold
+  static const accentCream = Color(0xFFF5E6D3); // Soft cream
+  static const accentBrown = Color(0xFF8B6F47); // Warm brown
+  static const accentSage = Color(0xFF9CAF88); // Sage green accent
+  
+  // Keep for compatibility
+  static const primaryPurple = primaryTerracotta;
+  static const accentOrange = darkTerracotta;
+  static const accentPink = lightTerracotta;
+  static const accentCyan = accentSage;
+  static const accentGreen = accentSage;
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    primaryColor: primaryPurple,
-    scaffoldBackgroundColor: Colors.grey[50],
+    primaryColor: primaryTerracotta,
+    scaffoldBackgroundColor: const Color(0xFFFAF7F5), // Warm off-white
     cardColor: Colors.white,
     colorScheme: const ColorScheme.light(
-      primary: primaryPurple,
-      secondary: accentPink,
+      primary: primaryTerracotta,
+      secondary: accentGold,
       surface: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.white,
-      foregroundColor: Colors.black87,
+      foregroundColor: Color(0xFF2A1F1A),
       elevation: 0,
     ),
   );
@@ -31,17 +42,17 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    primaryColor: primaryPurple,
+    primaryColor: primaryTerracotta,
     scaffoldBackgroundColor: darkBackground,
     cardColor: darkCard,
     colorScheme: const ColorScheme.dark(
-      primary: primaryPurple,
-      secondary: accentPink,
+      primary: primaryTerracotta,
+      secondary: accentGold,
       surface: darkCard,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: darkBackground,
-      foregroundColor: Colors.white,
+      foregroundColor: accentCream,
       elevation: 0,
     ),
   );

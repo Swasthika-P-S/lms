@@ -43,3 +43,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# API Keys - IMPORTANT: Do not commit sensitive data
+lib/config/api_keys.dart
+
+# Environment files
+.env
+.env.*
+
+# Firebase cache
+.firebase/

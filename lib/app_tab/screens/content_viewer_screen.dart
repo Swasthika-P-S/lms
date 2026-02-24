@@ -4,6 +4,7 @@ import '../models/lesson.dart';
 import '../services/course_service.dart';
 import '../services/download_service.dart';
 import '../utils/colors.dart';
+import '../../widgets/video_player_widget.dart';
 
 class ContentViewerScreen extends StatefulWidget {
   final Lesson lesson;
@@ -112,6 +113,22 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
   }
 
   Widget _buildVideoPlayer() {
+    // If the lesson has a valid video URL, show the player
+    if (currentLesson.videoUrl.isNotEmpty && 
+        (currentLesson.videoUrl.contains('youtube.com') || 
+         currentLesson.videoUrl.contains('youtu.be'))) {
+      return Container(
+        color: Colors.black,
+        child: Center(
+          child: VideoPlayerWidget(
+            videoUrl: currentLesson.videoUrl,
+            autoPlay: true,
+          ),
+        ),
+      );
+    }
+    
+    // Otherwise, show placeholder
     return Container(
       color: Colors.black,
       child: Center(
@@ -150,13 +167,15 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
             ),
             const SizedBox(height: 20),
             const Text(
-              'Video Player Placeholder',
+              'No video URL available',
               style: TextStyle(fontSize: 14, color: Colors.white60),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Integrate video_player or chewie package',
-              style: TextStyle(fontSize: 12, color: Colors.white38),
+            Text(
+              currentLesson.videoUrl.isEmpty 
+                  ? 'Please add a video URL to this lesson'
+                  : 'Please provide a valid YouTube URL',
+              style: const TextStyle(fontSize: 12, color: Colors.white38),
             ),
           ],
         ),

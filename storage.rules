@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // User profile images
+    match /users/{userId}/profile/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == userId 
+                   && request.resource.size < 5 * 1024 * 1024 // 5MB limit
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Problem solution code files
+    match /submissions/{userId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == userId
+                   && request.resource.size < 2 * 1024 * 1024; // 2MB limit
+    }
+    
+    // Course resources (read-only for users)
+    match /resources/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins via Firebase Console
+    }
+  }
+}

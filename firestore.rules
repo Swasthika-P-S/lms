@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
+      
+      // User progress subcollection
+      match /progress/{topicId} {
+        allow read: if isSignedIn();
+        allow write: if isOwner(userId);
+      }
+      
+      // User submissions subcollection
+      match /submissions/{submissionId} {
+        allow read: if isSignedIn();
+        allow write: if isOwner(userId);
+      }
+    }
+    
+    // Courses collection (DSA, DBMS, OOPs, C++, Java)
+    match /courses/{courseId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Only admins via Firebase Console
+      
+      // Topics subcollection
+      match /topics/{topicId} {
+        allow read: if isSignedIn();
+        allow write: if false;
+        
+        // Problems subcollection
+        match /problems/{problemId} {
+          allow read: if isSignedIn();
+          allow write: if false;
+        }
+      }
+    }
+    
+    // Resources collection (external links)
+    match /resources/{resourceId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+    
+    // Leaderboard collection
+    match /leaderboard/{entryId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Updated via Cloud Functions
+    }
+    
+    // Chat history
+    match /chats/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      match /messages/{messageId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // Admin collection
+    match /admin/{document=**} {
+      allow read, write: if false; // Only via Firebase Console
+    }
+  }
+}

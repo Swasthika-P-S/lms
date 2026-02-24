@@ -12,9 +12,25 @@ import 'home_tab/screens/home/home_screen.dart';
 import 'home_tab/screens/auth/profile/profile_screen.dart';
 import 'home_tab/screens/settings/settings_screen.dart';
 import 'home_tab/utils/theme.dart';
+import 'screens/admin/admin_dashboard_screen.dart';
 
-void main() {
+// Firebase imports
+import 'services/firebase_service.dart';
+import 'providers/firebase_auth_provider.dart';
+import 'providers/chatbot_provider.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  try {
+    await FirebaseService.instance.initialize();
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    print('❌ Firebase initialization failed: $e');
+    // Continue anyway - app can still work with limited functionality
+  }
+  
   runApp(const LearnHubApp());
 }
 
@@ -28,18 +44,22 @@ class LearnHubApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        // Firebase providers
+        ChangeNotifierProvider(create: (_) => FirebaseAuthProvider()),
+        ChangeNotifierProvider(create: (_) => ChatbotProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
           return MaterialApp(
-            title: 'LearnHub LMS',
+            title: 'Learning Management System',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
-            home: Consumer<AuthProvider>(
-              builder: (context, authProvider, _) {
-                if (authProvider.isLoading) {
+            home: Consumer<FirebaseAuthProvider>(
+              builder: (context, firebaseAuthProvider, _) {
+                // Show loading screen during initialization
+                if (firebaseAuthProvider.isLoading) {
                   return Scaffold(
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     body: Center(
@@ -49,7 +69,9 @@ class LearnHubApp extends StatelessWidget {
                     ),
                   );
                 }
-                return authProvider.user != null
+                
+                // Show main screen if authenticated, otherwise login screen
+                return firebaseAuthProvider.isAuthenticated
                     ? const MainScreen()
                     : const LoginScreen();
               },
@@ -74,12 +96,24 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final firebaseAuthProvider = Provider.of<FirebaseAuthProvider>(context);
     
     // Get user info from UserProvider (not AuthProvider)
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userName = userProvider.userModel?.name ?? 'User';
     
-    final screens = [
+    // Check if user is admin
+    final isAdmin = firebaseAuthProvider.isAdmin;
+    
+    // Different screens for admin and student
+    final List<Widget> adminScreens = [
+      const AdminDashboardScreen(), // Admin Dashboard
+      HomeScreen(), // Home tab - overview
+      SettingsScreen(), // Settings
+    ];
+    
+    final List<Widget> studentScreens = [
       HomeScreen(), // Home tab - main dashboard
       CourseListingScreen(), // App tab - course listing
       CoursesScreen(), // Quiz tab - courses only
@@ -91,7 +125,33 @@ class _MainScreenState extends State<MainScreen> {
       SettingsScreen(), // Home tab - settings
     ];
     
+    final screens = isAdmin ? adminScreens : studentScreens;
+    
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: isDarkMode ? AppColors.card : Colors.white,
+        elevation: 0,
+        title: Text(
+          isAdmin ? 'Admin Panel' : 'LMS',
+          style: TextStyle(
+            color: AppColors.getTextPrimary(context),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          // Theme toggle button
+          IconButton(
+            icon: Icon(
+              isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: AppColors.primary,
+            ),
+            onPressed: () {
+              themeProvider.toggleTheme();
+            },
+            tooltip: isDarkMode ? 'Light Mode' : 'Dark Mode',
+          ),
+        ],
+      ),
       body: screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -109,14 +169,20 @@ class _MainScreenState extends State<MainScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Icons.home_rounded, 'Home', 0, isDarkMode),
-                _buildNavItem(Icons.school_rounded, 'Courses', 1, isDarkMode),
-                _buildNavItem(Icons.book_rounded, 'Quizzes', 2, isDarkMode),
-                _buildNavItem(Icons.assignment_rounded, 'Tasks', 3, isDarkMode),
-                _buildNavItem(Icons.person_rounded, 'Profile', 4, isDarkMode),
-                _buildNavItem(Icons.settings_rounded, 'Settings', 5, isDarkMode),
-              ],
+              children: isAdmin
+                  ? [
+                      _buildNavItem(Icons.dashboard_rounded, 'Dashboard', 0, isDarkMode),
+                      _buildNavItem(Icons.home_rounded, 'Home', 1, isDarkMode),
+                      _buildNavItem(Icons.settings_rounded, 'Settings', 2, isDarkMode),
+                    ]
+                  : [
+                      _buildNavItem(Icons.home_rounded, 'Home', 0, isDarkMode),
+                      _buildNavItem(Icons.school_rounded, 'Courses', 1, isDarkMode),
+                      _buildNavItem(Icons.book_rounded, 'Quizzes', 2, isDarkMode),
+                      _buildNavItem(Icons.assignment_rounded, 'Tasks', 3, isDarkMode),
+                      _buildNavItem(Icons.person_rounded, 'Profile', 4, isDarkMode),
+                      _buildNavItem(Icons.settings_rounded, 'Settings', 5, isDarkMode),
+                    ],
             ),
           ),
         ),
