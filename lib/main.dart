@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'app_tab/screens/course_listing_screen.dart';
-import 'app_tab/utils/colors.dart';
-import 'quiz_tab/courses_screen.dart';
-import 'assignment_tab/ui/dashboard_screen.dart';
-import 'home_tab/screens/providers/theme_provider.dart';
-import 'home_tab/screens/providers/auth_provider.dart';
-import 'home_tab/screens/providers/user_provider.dart';
-import 'home_tab/screens/auth/login_screen.dart';
-import 'home_tab/screens/home/home_screen.dart';
-import 'home_tab/screens/auth/profile/profile_screen.dart';
-import 'home_tab/screens/settings/settings_screen.dart';
-import 'home_tab/utils/theme.dart';
-import 'screens/admin/admin_dashboard_screen.dart';
+import 'package:learnhub/app_tab/screens/course_listing_screen.dart';
+import 'package:learnhub/app_tab/utils/colors.dart';
+import 'package:learnhub/quiz_tab/courses_screen.dart';
+import 'package:learnhub/assignment_tab/ui/dashboard_screen.dart';
+import 'package:learnhub/home_tab/screens/providers/theme_provider.dart';
+import 'package:learnhub/home_tab/screens/providers/auth_provider.dart';
+import 'package:learnhub/home_tab/screens/providers/user_provider.dart';
+import 'package:learnhub/home_tab/screens/auth/login_screen.dart';
+import 'package:learnhub/home_tab/screens/home/home_screen.dart';
+import 'package:learnhub/home_tab/screens/auth/profile/profile_screen.dart';
+import 'package:learnhub/home_tab/screens/settings/settings_screen.dart';
+import 'package:learnhub/home_tab/utils/theme.dart';
+import 'package:learnhub/screens/admin/admin_dashboard_screen.dart';
 
 // Firebase imports
 import 'services/firebase_service.dart';
@@ -101,7 +101,7 @@ class _MainScreenState extends State<MainScreen> {
     
     // Get user info from UserProvider (not AuthProvider)
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userName = userProvider.userModel?.name ?? 'User';
+    final userName = userProvider.userModel?.name ?? firebaseAuthProvider.user?.displayName ?? 'User';
     
     // Check if user is admin
     final isAdmin = firebaseAuthProvider.isAdmin;

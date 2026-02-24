@@ -34,8 +34,17 @@ class FirebaseAuthProvider extends ChangeNotifier {
       _user = user;
       
       if (user != null) {
-        // Fetch user data from Firestore
-        _userModel = await _firestoreService.getUserData(user.uid);
+        try {
+          // Fetch user data from Firestore with timeout
+          _userModel = await _firestoreService.getUserData(user.uid)
+              .timeout(const Duration(seconds: 15), onTimeout: () {
+                print('⚠️ Auth listener: Firestore fetch timed out. Using cached data if available.');
+                return null;
+              });
+        } catch (e) {
+          print('❌ Auth listener: Error fetching user data: $e');
+          _userModel = null;
+        }
       } else {
         _userModel = null;
       }

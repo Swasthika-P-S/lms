@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../providers/auth_provider.dart';
-import '../providers/user_provider.dart';
-import '../../utils/theme.dart';
+import 'package:learnhub/providers/firebase_auth_provider.dart';
+import 'package:learnhub/home_tab/utils/theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -37,20 +35,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _isLoading = true);
 
-    final authProvider = context.read<AuthProvider>();
-    final userProvider = context.read<UserProvider>();
+    try {
+      final firebaseAuthProvider = Provider.of<FirebaseAuthProvider>(context, listen: false);
+      
+      final success = await firebaseAuthProvider.signUpWithEmailPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        _nameController.text.trim(),
+      );
 
-    // 🔹 Dummy signup = login with email
-    authProvider.login(_emailController.text.trim());
+      if (mounted) {
+        setState(() => _isLoading = false);
 
-    // 🔹 Load dummy user data
-    userProvider.loadUserData(_emailController.text.trim());
-
-    if (!mounted) return;
-
-    setState(() => _isLoading = false);
-
-    Navigator.pop(context);
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(firebaseAuthProvider.errorMessage ?? 'Registration failed'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -72,9 +94,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     AppTheme.darkBackground,
                   ]
                 : [
-                    Colors.purple.shade50,
-                    Colors.blue.shade50,
-                    Colors.pink.shade50,
+                    const Color(0xFFF0F2FF),
+                    const Color(0xFFE0E7FF),
+                    const Color(0xFFF5F3FF),
                   ],
           ),
         ),
@@ -91,15 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        foreground: Paint()
-                          ..shader = LinearGradient(
-                            colors: [
-                              AppTheme.primaryPurple,
-                              AppTheme.accentPink,
-                            ],
-                          ).createShader(
-                            const Rect.fromLTWH(0, 0, 200, 70),
-                          ),
+                        color: isDark ? Colors.white : const Color(0xFF1E1B4B),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -107,7 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       'Join LearnHub today!',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey.shade400,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -149,6 +163,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           _obscurePassword
                               ? Icons.visibility_off
                               : Icons.visibility,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
                         ),
                         onPressed: () {
                           setState(
@@ -175,6 +190,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           _obscureConfirmPassword
                               ? Icons.visibility_off
                               : Icons.visibility,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
                         ),
                         onPressed: () {
                           setState(
@@ -199,6 +215,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
+                          elevation: 0,
                         ),
                         child: _isLoading
                             ? const CircularProgressIndicator(

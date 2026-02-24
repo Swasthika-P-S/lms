@@ -27,6 +27,25 @@ class UserModel {
   /// Check if user is admin
   bool get isAdmin => role == 'admin';
   
+  /// Helper for UI
+  String get name => displayName;
+  String get uid => id;
+
+  /// Get initials from name
+  String getInitials() {
+    if (displayName.isEmpty) return 'U';
+    List<String> names = displayName.trim().split(' ');
+    if (names.length > 1) {
+      return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+    }
+    return names[0][0].toUpperCase();
+  }
+
+  // Proxy getters for stats
+  int get coursesCompleted => stats.coursesCompleted;
+  int get totalHours => stats.totalHours;
+  double get progressPercentage => stats.progressPercentage;
+  
   factory UserModel.fromFirestore(Map<String, dynamic> data, String id) {
     return UserModel(
       id: id,
@@ -60,12 +79,18 @@ class UserStats {
   final int solvedProblems;
   final int totalScore;
   final int streak;
+  final int coursesCompleted;
+  final int totalHours;
+  final double progressPercentage;
   
   UserStats({
     this.totalProblems = 0,
     this.solvedProblems = 0,
     this.totalScore = 0,
     this.streak = 0,
+    this.coursesCompleted = 0,
+    this.totalHours = 0,
+    this.progressPercentage = 0.0,
   });
   
   factory UserStats.fromMap(Map<String, dynamic> data) {
@@ -74,6 +99,9 @@ class UserStats {
       solvedProblems: data['solvedProblems'] ?? 0,
       totalScore: data['totalScore'] ?? 0,
       streak: data['streak'] ?? 0,
+      coursesCompleted: data['coursesCompleted'] ?? 0,
+      totalHours: data['totalHours'] ?? 0,
+      progressPercentage: (data['progressPercentage'] ?? 0.0).toDouble(),
     );
   }
   
@@ -83,6 +111,9 @@ class UserStats {
       'solvedProblems': solvedProblems,
       'totalScore': totalScore,
       'streak': streak,
+      'coursesCompleted': coursesCompleted,
+      'totalHours': totalHours,
+      'progressPercentage': progressPercentage,
     };
   }
   

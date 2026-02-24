@@ -155,6 +155,11 @@ class AuthService {
       }
     } catch (e) {
       print('❌ Error creating/updating user document: $e');
+      // If Firestore is unavailable, we still want the user to be logged in via Auth
+      // They might experience limited functionality, but shouldn't be blocked entirely
+      if (e.toString().contains('unavailable')) {
+        print('⚠️ Firestore is offline. User document will be created when online.');
+      }
     }
   }
   

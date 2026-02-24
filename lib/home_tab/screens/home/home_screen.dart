@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../providers/user_provider.dart';
-import '../../utils/theme.dart';
-import '../../widgets/dashboard_card.dart';
-import '../../widgets/stat_card.dart';
-import '../../widgets/category_icon.dart';
-import '../../widgets/pro_tip_card.dart';
+import 'package:learnhub/providers/firebase_auth_provider.dart';
+import 'package:learnhub/home_tab/utils/theme.dart';
+import 'package:learnhub/home_tab/widgets/dashboard_card.dart';
+import 'package:learnhub/home_tab/widgets/stat_card.dart';
+import 'package:learnhub/home_tab/widgets/category_icon.dart';
+import 'package:learnhub/home_tab/widgets/pro_tip_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,49 +16,38 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-    if (authProvider.user != null) {
-      userProvider.loadUserData(authProvider.user!);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: Theme.of(context).brightness == Brightness.dark
+            colors: isDark
                 ? [
                     AppTheme.darkBackground,
                     const Color(0xFF1F1640),
                     AppTheme.darkBackground,
                   ]
                 : [
-                    Colors.grey.shade50,
-                    Colors.blue.shade50,
-                    Colors.purple.shade50,
+                    const Color(0xFFF0F2FF),
+                    const Color(0xFFE0E7FF),
+                    const Color(0xFFF5F3FF),
                   ],
           ),
         ),
         child: SafeArea(
-          child: Consumer2<AuthProvider, UserProvider>(
-            builder: (context, authProvider, userProvider, _) {
-              final user = userProvider.userModel;
+          child: Consumer<FirebaseAuthProvider>(
+            builder: (context, authProvider, _) {
+              final user = authProvider.userModel;
+              final firebaseUser = authProvider.user;
 
-              if (user == null) {
-                return const Center(child: CircularProgressIndicator());
-              }
+              // Fallback to basic info if userModel is null (offline/not created yet)
+              final displayName = user?.name ?? firebaseUser?.displayName ?? 'Student';
+              final initials = user?.getInitials() ?? 
+                  (displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U');
 
               return CustomScrollView(
                 slivers: [
@@ -81,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Text(
-                                user.name.split(' ')[0],
+                                displayName.split(' ')[0],
                                 style: const TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
@@ -93,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             radius: 30,
                             backgroundColor: AppTheme.primaryPurple,
                             child: Text(
-                              user.getInitials(),
+                              initials,
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -141,15 +129,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                   color: AppTheme.accentOrange,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: const Row(
+                                child: Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.emoji_events,
                                       size: 16,
                                       color: Colors.white,
                                     ),
-                                    SizedBox(width: 4),
-                                    Text(
+                                    const SizedBox(width: 4),
+                                    const Text(
                                       'Goal Achieved',
                                       style: TextStyle(
                                         color: Colors.white,
@@ -224,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(
                                 child: StatCard(
                                   icon: Icons.menu_book,
-                                  value: user.coursesCompleted.toString(),
+                                  value: (user?.coursesCompleted ?? 0).toString(),
                                   label: 'Courses',
                                   color: AppTheme.primaryPurple,
                                 ),
@@ -233,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(
                                 child: StatCard(
                                   icon: Icons.access_time,
-                                  value: user.totalHours.toString(),
+                                  value: (user?.totalHours ?? 0).toString(),
                                   label: 'Hours',
                                   color: AppTheme.accentPink,
                                 ),
@@ -242,11 +230,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(
                                 child: StatCard(
                                   icon: Icons.trending_up,
-                                  value: '${user.progressPercentage.toInt()}%',
+                                  value: '${(user?.progressPercentage ?? 0).toInt()}%',
                                   label: 'Progress',
                                   color: AppTheme.accentCyan,
                                   showProgress: true,
-                                  progress: user.progressPercentage / 100,
+                                  progress: (user?.progressPercentage ?? 0) / 100,
                                 ),
                               ),
                             ],
@@ -273,11 +261,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           TextButton(
                             onPressed: () {},
-                            child: const Row(
+                            child: Row(
                               children: [
-                                Icon(Icons.add, size: 20),
-                                SizedBox(width: 4),
-                                Text('New Course'),
+                                const Icon(Icons.add, size: 20),
+                                const SizedBox(width: 4),
+                                const Text('New Course'),
                               ],
                             ),
                           ),

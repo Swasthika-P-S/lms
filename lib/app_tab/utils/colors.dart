@@ -11,10 +11,10 @@ class AppColors {
   static final Color textSecondary = Colors.white.withOpacity(0.6);
   
   // Light theme colors
-  static const Color lightBackground = Color(0xFFF5F5F5);
+  static const Color lightBackground = Color(0xFFF8FAFC); // Slate 50
   static const Color lightCard = Colors.white;
-  static final Color lightTextPrimary = Colors.black87;
-  static final Color lightTextSecondary = Colors.grey[600]!;
+  static const Color lightTextPrimary = Color(0xFF1E293B); // Slate 800
+  static const Color lightTextSecondary = Color(0xFF64748B); // Slate 500
   
   // Helper methods to get theme-aware colors
   static Color getBackground(BuildContext context) {

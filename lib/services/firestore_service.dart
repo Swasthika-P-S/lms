@@ -16,13 +16,31 @@ class FirestoreService {
   /// Get user data
   Future<UserModel?> getUserData(String userId) async {
     try {
-      final doc = await usersCollection.doc(userId).get();
+      // Set a timeout for the network request
+      final doc = await usersCollection.doc(userId).get(
+        const GetOptions(source: Source.serverAndCache),
+      ).timeout(const Duration(seconds: 10));
+      
       if (doc.exists) {
         return UserModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
       }
       return null;
     } catch (e) {
       print('❌ Error getting user data: $e');
+      
+      // Try to get from cache if server fails
+      try {
+        final doc = await usersCollection.doc(userId).get(
+          const GetOptions(source: Source.cache),
+        );
+        if (doc.exists) {
+          print('ℹ️ Restored user data from cache');
+          return UserModel.fromFirestore(doc.data() as Map<String, dynamic>, doc.id);
+        }
+      } catch (cacheError) {
+        print('❌ Cache fallback failed: $cacheError');
+      }
+      
       return null;
     }
   }

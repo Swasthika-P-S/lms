@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../providers/firebase_auth_provider.dart';
-import '../providers/theme_provider.dart';
-import '../../utils/theme.dart';
-import 'register_screen.dart';
-import '../../../screens/test_login_screen.dart';
-import '../../../screens/direct_firebase_test.dart';
+import 'package:learnhub/providers/firebase_auth_provider.dart';
+import 'package:learnhub/home_tab/screens/providers/theme_provider.dart';
+import 'package:learnhub/home_tab/utils/theme.dart';
+import 'package:learnhub/home_tab/screens/auth/register_screen.dart';
+import 'package:learnhub/screens/test_login_screen.dart';
+import 'package:learnhub/screens/direct_firebase_test.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(firebaseAuthProvider.errorMessage ?? 'Login failed'),
-          backgroundColor: AppTheme.darkTerracotta,
+          backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
@@ -68,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(firebaseAuthProvider.errorMessage ?? 'Google Sign-In failed'),
-          backgroundColor: AppTheme.darkTerracotta,
+          backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
@@ -91,13 +91,13 @@ class _LoginScreenState extends State<LoginScreen> {
             colors: isDark
                 ? [
                     AppTheme.darkBackground,
-                    const Color(0xFF2A1610),
+                    const Color(0xFF1F1640), // Deep purple
                     AppTheme.darkBackground,
                   ]
                 : [
-                    const Color(0xFFFAF7F5),
-                    const Color(0xFFF5E6D3),
-                    const Color(0xFFFFEFE5),
+                    const Color(0xFFF0F2FF),
+                    const Color(0xFFE0E7FF),
+                    const Color(0xFFF5F3FF),
                   ],
           ),
         ),
@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 250,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.primaryTerracotta.withOpacity(0.1),
+                    color: AppTheme.primaryPurple.withOpacity(0.1),
                   ),
                 ),
               ),
@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 200,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.accentGold.withOpacity(0.1),
+                    color: AppTheme.accentPink.withOpacity(0.1),
                   ),
                 ),
               ),
@@ -141,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         : Colors.white.withOpacity(0.7),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppTheme.primaryTerracotta.withOpacity(0.2),
+                      color: AppTheme.primaryPurple.withOpacity(0.2),
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -154,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: IconButton(
                     icon: Icon(
                       isDark ? Icons.light_mode : Icons.dark_mode,
-                      color: AppTheme.primaryTerracotta,
+                      color: AppTheme.primaryPurple,
                     ),
                     onPressed: () {
                       themeProvider.themeMode = 
@@ -185,14 +185,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    AppTheme.primaryTerracotta,
-                                    AppTheme.darkTerracotta,
+                                    AppTheme.primaryPurple,
+                                    const Color(0xFF4F46E5), // Indigo 600
                                   ],
                                 ),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppTheme.primaryTerracotta.withOpacity(0.3),
+                                    color: AppTheme.primaryPurple.withOpacity(0.3),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10),
                                   ),
@@ -212,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? AppTheme.accentCream : AppTheme.darkTerracotta,
+                                color: isDark ? Colors.white : const Color(0xFF1E1B4B), // Deep Indigo
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -221,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               'Learn, Practice, and Excel',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: isDark ? Colors.grey[400] : const Color(0xFF8B6F47),
+                                color: isDark ? Colors.grey[400] : const Color(0xFF4B5563),
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -239,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: Divider(
                                     color: isDark 
                                         ? Colors.grey[700] 
-                                        : const Color(0xFFD4A574).withOpacity(0.3),
+                                        : Colors.grey[300],
                                     thickness: 1,
                                   ),
                                 ),
@@ -248,7 +248,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: Text(
                                     'OR',
                                     style: TextStyle(
-                                      color: isDark ? Colors.grey[500] : const Color(0xFF8B6F47),
+                                      color: isDark ? Colors.grey[500] : Colors.grey[600],
                                       fontWeight: FontWeight.w600,
                                       fontSize: 12,
                                       letterSpacing: 1,
@@ -259,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: Divider(
                                     color: isDark 
                                         ? Colors.grey[700] 
-                                        : const Color(0xFFD4A574).withOpacity(0.3),
+                                        : Colors.grey[300],
                                     thickness: 1,
                                   ),
                                 ),
@@ -294,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       : Icons.visibility_outlined,
                                   color: isDark 
                                       ? Colors.grey[500] 
-                                      : const Color(0xFF8B6F47),
+                                      : Colors.grey[600],
                                 ),
                                 onPressed: () {
                                   setState(() => _obscurePassword = !_obscurePassword);
@@ -317,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Text(
                                   "Don't have an account? ",
                                   style: TextStyle(
-                                    color: isDark ? Colors.grey[400] : const Color(0xFF8B6F47),
+                                    color: isDark ? Colors.grey[400] : Colors.grey[600],
                                     fontSize: 15,
                                   ),
                                 ),
@@ -338,7 +338,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child: Text(
                                     'Sign Up',
                                     style: TextStyle(
-                                      color: AppTheme.primaryTerracotta,
+                                      color: AppTheme.primaryPurple,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -421,7 +421,7 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryTerracotta.withOpacity(0.2),
+          color: AppTheme.primaryPurple.withOpacity(0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -448,7 +448,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isDark ? AppTheme.accentGold : AppTheme.primaryTerracotta,
+          backgroundColor: isDark ? const Color(0xFF334155) : AppTheme.primaryPurple,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -468,13 +468,13 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
           colors: [
-            AppTheme.darkTerracotta,
-            AppTheme.primaryTerracotta,
+            const Color(0xFF4F46E5), // Indigo 600
+            AppTheme.primaryPurple,
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryTerracotta.withOpacity(0.3),
+            color: AppTheme.primaryPurple.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -529,8 +529,8 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? AppTheme.accentGold.withOpacity(0.2)
-              : AppTheme.primaryTerracotta.withOpacity(0.2),
+              ? AppTheme.primaryPurple.withOpacity(0.3)
+              : AppTheme.primaryPurple.withOpacity(0.2),
           width: 1.5,
         ),
         boxShadow: [
@@ -546,18 +546,18 @@ class _LoginScreenState extends State<LoginScreen> {
         obscureText: obscureText,
         keyboardType: keyboardType,
         style: TextStyle(
-          color: isDark ? AppTheme.accentCream : const Color(0xFF2A1F1A),
+          color: isDark ? Colors.white : const Color(0xFF1E293B),
           fontSize: 16,
         ),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(
-            color: isDark ? Colors.grey[500] : const Color(0xFF8B6F47),
+            color: isDark ? Colors.grey[500] : Colors.grey[600],
             fontSize: 15,
           ),
           prefixIcon: Icon(
             icon,
-            color: isDark ? AppTheme.accentGold : AppTheme.primaryTerracotta,
+            color: isDark ? Colors.white70 : AppTheme.primaryPurple,
             size: 22,
           ),
           suffixIcon: suffixIcon,
