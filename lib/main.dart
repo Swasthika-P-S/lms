@@ -10,6 +10,7 @@ import 'package:learnhub/home_tab/screens/providers/user_provider.dart';
 import 'package:learnhub/home_tab/screens/auth/login_screen.dart';
 import 'package:learnhub/home_tab/screens/home/home_screen.dart';
 import 'package:learnhub/home_tab/screens/auth/profile/profile_screen.dart';
+import 'package:learnhub/home_tab/screens/chatbot/chatbot_screen.dart';
 import 'package:learnhub/home_tab/screens/settings/settings_screen.dart';
 import 'package:learnhub/home_tab/utils/theme.dart';
 import 'package:learnhub/screens/admin/admin_dashboard_screen.dart';
@@ -19,8 +20,13 @@ import 'services/firebase_service.dart';
 import 'providers/firebase_auth_provider.dart';
 import 'providers/chatbot_provider.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
   
   // Initialize Firebase
   try {

@@ -1,98 +1,252 @@
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-/// Gemini AI chatbot service for placement assistance
+/// Gemini AI chatbot service for LMS study assistance
+/// Uses direct HTTP calls to Gemini API for reliability
 class ChatbotService {
-  late final GenerativeModel _model;
-  late final ChatSession _chat;
+  String? _apiKey;
   bool _initialized = false;
+  String _currentCourse = 'General';
+  
+  // Chat history for context
+  final List<Map<String, dynamic>> _chatHistory = [];
   
   /// Initialize the chatbot with API key
   Future<void> initialize(String apiKey) async {
     if (_initialized) return;
     
-    try {
-      _model = GenerativeModel(
-        model: 'gemini-pro',
-        apiKey: apiKey,
-        generationConfig: GenerationConfig(
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        ),
-        safetySettings: [
-          SafetySetting(HarmCategory.harassment, HarmBlockThreshold.medium),
-          SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.medium),
-          SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.medium),
-          SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.medium),
-        ],
-      );
-      
-      // Start a new chat session with placement-focused system prompt
-      _chat = _model.startChat(history: [
-        Content.text(_getSystemPrompt()),
-      ]);
-      
-      _initialized = true;
-      print('✅ Chatbot initialized successfully');
-    } catch (e) {
-      print('❌ Chatbot initialization error: $e');
-      rethrow;
+    _apiKey = apiKey;
+    _chatHistory.clear();
+    
+    // Add system instruction as first user message
+    _chatHistory.add({
+      'role': 'user',
+      'parts': [{'text': _getSystemPrompt(_currentCourse)}],
+    });
+    _chatHistory.add({
+      'role': 'model',
+      'parts': [{'text': 'Understood! I\'m LearnBot, your AI study assistant. I\'m ready to help you learn. Ask me anything about your courses!'}],
+    });
+    
+    _initialized = true;
+    print('✅ Chatbot initialized successfully');
+  }
+  
+  /// Get system prompt tailored for the selected course
+  String _getSystemPrompt(String course) {
+    final courseContext = _getCourseContext(course);
+    
+    final isCourseLocked = (course != 'General');
+    final restrictionRule = isCourseLocked ? '''
+
+STRICT RULE — TOPIC RESTRICTION:
+You are ONLY allowed to answer questions related to $course.
+If a student asks about something NOT related to $course, you MUST:
+1. Politely decline the question
+2. Say: "This question is outside the $course section. Please switch to the correct course tab (General, DSA, C, or OOPs) to ask this question."
+3. Do NOT answer the off-topic question at all, even partially
+4. If unsure whether it's related to $course, err on the side of caution and decline
+
+Examples of what to DECLINE in $course mode:
+- General knowledge questions unrelated to $course
+- Questions about other programming courses not covered by $course
+- Personal or non-academic questions
+''' : '''
+
+You are in General mode. You can help with any programming or computer science topic.
+''';
+
+    return '''
+You are LearnBot, an AI study assistant for a Learning Management System (LMS). 
+You help students learn and master their courses effectively.
+
+$courseContext
+$restrictionRule
+
+Your role as a study assistant:
+1. Explain concepts clearly with examples and analogies
+2. Provide well-commented code examples when relevant
+3. Help students debug their code and understand errors
+4. Suggest problem-solving approaches and study strategies
+5. Quiz students to test their understanding when asked
+6. Provide step-by-step solutions to problems
+7. Recommend learning paths and resources
+8. Be encouraging, patient, and supportive
+
+Guidelines:
+- Keep explanations clear, structured, and beginner-friendly
+- Use code blocks with proper syntax highlighting for code examples
+- Use bullet points and numbered lists for organized content
+- Break complex topics into smaller, digestible parts
+- If a student is struggling, try explaining from a different angle
+- Always encourage practice and hands-on coding
+- Use markdown formatting for better readability
+- When giving code, always add inline comments explaining each step
+''';
+  }
+
+  /// Get course-specific context for system prompt
+  String _getCourseContext(String course) {
+    switch (course) {
+      case 'DSA':
+        return '''
+Current Course Focus: Data Structures & Algorithms (DSA)
+Key Topics: Arrays, Linked Lists, Stacks, Queues, Trees, Graphs, 
+Hash Tables, Sorting Algorithms, Searching Algorithms, Dynamic Programming, 
+Greedy Algorithms, Recursion, Backtracking, Time & Space Complexity Analysis.
+
+When helping with DSA:
+- Always discuss time and space complexity (Big O notation)
+- Show multiple approaches (brute force then optimized)
+- Use visual representations when explaining data structures
+- Relate problems to real-world scenarios
+- Provide pseudocode before actual code when helpful
+''';
+      case 'C':
+        return '''
+Current Course Focus: C Programming
+Key Topics: Variables & Data Types, Operators, Control Flow (if/else, switch, loops),
+Functions, Pointers, Arrays, Strings, Structures, Unions, File I/O,
+Memory Management (malloc, calloc, free), Preprocessor Directives, 
+Bitwise Operations, Command Line Arguments.
+
+When helping with C Programming:
+- Emphasize memory management and pointer concepts
+- Show how things work at the memory level
+- Highlight common pitfalls (buffer overflow, dangling pointers, memory leaks)
+- Use proper C syntax and conventions
+- Explain compilation process when relevant
+''';
+      case 'OOPs':
+        return '''
+Current Course Focus: Object-Oriented Programming (OOPs)
+Key Topics: Classes & Objects, Encapsulation, Inheritance, Polymorphism,
+Abstraction, Constructors & Destructors, Access Modifiers, 
+Interfaces, Abstract Classes, Method Overloading & Overriding,
+Design Patterns, SOLID Principles, Composition vs Inheritance,
+Virtual Functions, Friend Functions.
+
+When helping with OOPs:
+- Use real-world analogies to explain OOP concepts
+- Show examples in C++ or Java as appropriate
+- Compare procedural vs object-oriented approaches
+- Discuss design principles and best practices
+- Explain with UML diagrams descriptions when helpful
+''';
+      default:
+        return '''
+General Study Assistant Mode.
+You can help with any programming or computer science topic including 
+DSA, C Programming, OOPs, and general software development concepts.
+''';
     }
   }
   
-  /// Get system prompt for placement assistant
-  String _getSystemPrompt() {
-    return '''
-You are a helpful AI assistant for a placement preparation portal. You help students prepare for technical interviews in:
-- Data Structures & Algorithms (DSA)
-- Database Management Systems (DBMS)
-- Object-Oriented Programming (OOPs)
-- C++ Programming
-- Java Development
-
-Your role is to:
-1. Explain complex concepts in simple terms
-2. Provide code examples when asked
-3. Help debug code problems
-4. Suggest problem-solving approaches
-5. Give interview tips and best practices
-6. Be encouraging and motivating
-
-Guidelines:
-- Keep explanations concise and clear
-- Use code blocks for code examples with proper syntax highlighting
-- Use bullet points for lists
-- Be patient and supportive
-- If you don't know something, admit it honestly
-- Focus on practical, interview-relevant knowledge
-
-Format your responses in Markdown for better readability.
-''';
+  /// Switch to a different course context
+  void switchCourse(String course) {
+    _currentCourse = course;
+    if (_initialized) {
+      _chatHistory.clear();
+      _chatHistory.add({
+        'role': 'user',
+        'parts': [{'text': _getSystemPrompt(course)}],
+      });
+      _chatHistory.add({
+        'role': 'model', 
+        'parts': [{'text': 'Understood! I\'m now focused on $course. Ask me anything!'}],
+      });
+      print('🔄 Switched to $course context');
+    }
   }
   
-  /// Send a message to the chatbot
+  /// Send a message to the chatbot via direct HTTP API call
   Future<String> sendMessage(String message, {String? context}) async {
-    if (!_initialized) {
+    if (!_initialized || _apiKey == null) {
       throw Exception('Chatbot not initialized. Call initialize() first.');
     }
     
     try {
-      // Add context if provided (e.g., current topic, problem details)
       String fullMessage = message;
       if (context != null && context.isNotEmpty) {
         fullMessage = 'Context: $context\n\nQuestion: $message';
       }
       
-      final response = await _chat.sendMessage(Content.text(fullMessage));
-      final text = response.text ?? 'Sorry, I could not generate a response.';
+      // Add user message to history
+      _chatHistory.add({
+        'role': 'user',
+        'parts': [{'text': fullMessage}],
+      });
       
-      print('💬 Bot response: ${text.substring(0, text.length > 100 ? 100 : text.length)}...');
-      return text;
+      // Call Gemini API directly via HTTP
+      final url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$_apiKey'
+      );
       
+      final body = jsonEncode({
+        'contents': _chatHistory,
+        'generationConfig': {
+          'temperature': 0.7,
+          'topK': 40,
+          'topP': 0.95,
+          'maxOutputTokens': 2048,
+        },
+        'safetySettings': [
+          {'category': 'HARM_CATEGORY_HARASSMENT', 'threshold': 'BLOCK_MEDIUM_AND_ABOVE'},
+          {'category': 'HARM_CATEGORY_HATE_SPEECH', 'threshold': 'BLOCK_MEDIUM_AND_ABOVE'},
+          {'category': 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'threshold': 'BLOCK_MEDIUM_AND_ABOVE'},
+          {'category': 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold': 'BLOCK_MEDIUM_AND_ABOVE'},
+        ],
+      });
+      
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final text = data['candidates']?[0]?['content']?['parts']?[0]?['text'] ?? 
+            'Sorry, I could not generate a response.';
+        
+        // Add bot response to history
+        _chatHistory.add({
+          'role': 'model',
+          'parts': [{'text': text}],
+        });
+        
+        // Keep history manageable (last 20 exchanges)
+        if (_chatHistory.length > 42) {
+          // Keep first 2 (system prompt + ack) and last 40
+          final systemPart = _chatHistory.sublist(0, 2);
+          final recentPart = _chatHistory.sublist(_chatHistory.length - 40);
+          _chatHistory.clear();
+          _chatHistory.addAll(systemPart);
+          _chatHistory.addAll(recentPart);
+        }
+        
+        return text;
+      } else {
+        final errorData = jsonDecode(response.body);
+        final errorMsg = errorData['error']?['message'] ?? 'Unknown API error';
+        print('❌ Gemini API error (${response.statusCode}): $errorMsg');
+        
+        // Remove the failed user message from history
+        if (_chatHistory.isNotEmpty && _chatHistory.last['role'] == 'user') {
+          _chatHistory.removeLast();
+        }
+        
+        return 'Sorry, I couldn\'t process that request. Error: $errorMsg';
+      }
     } catch (e) {
       print('❌ Chatbot error: $e');
-      return 'Sorry, I encountered an error. Please try again.';
+      
+      // Remove the failed user message from history
+      if (_chatHistory.isNotEmpty && _chatHistory.last['role'] == 'user') {
+        _chatHistory.removeLast();
+      }
+      
+      return 'Sorry, I encountered a connection error. Please check your internet and try again.';
     }
   }
   
@@ -105,9 +259,9 @@ $question
 
 Please provide:
 1. Explanation of the concept
-2. Code example in $language
+2. Code example in $language with comments
 3. Time and space complexity (if applicable)
-4. Common pitfalls to avoid
+4. Common mistakes to avoid
 ''';
     
     return await sendMessage(enhancedQuestion);
@@ -116,26 +270,26 @@ Please provide:
   /// Get explanation for a concept
   Future<String> explainConcept(String concept, String topic) async {
     final question = '''
-Can you explain the concept of "$concept" in the context of $topic?
+Explain "$concept" in the context of $topic.
 
 Please provide:
 1. Simple definition
 2. Real-world analogy
-3. Example (with code if relevant)
-4. Why it's important for interviews
+3. Code example (if relevant) with comments
+4. Key points to remember
 ''';
     
     return await sendMessage(question);
   }
   
-  /// Get hints for a problem without giving away the full solution
+  /// Get hints for a problem
   Future<String> getHint(String problemDescription) async {
     final question = '''
 I'm stuck on this problem:
 
 $problemDescription
 
-Can you give me a hint to help me solve it? Please don't give me the complete solution, just guide me in the right direction.
+Give me a hint to help me solve it. Don't give the complete solution — just guide me in the right direction with a step-by-step thinking approach.
 ''';
     
     return await sendMessage(question);
@@ -144,7 +298,7 @@ Can you give me a hint to help me solve it? Please don't give me the complete so
   /// Review code and provide feedback
   Future<String> reviewCode(String code, String language) async {
     final question = '''
-Can you review this $language code and provide feedback?
+Review this $language code and provide feedback:
 
 ```$language
 $code
@@ -161,16 +315,15 @@ Please check for:
     return await sendMessage(question);
   }
   
-  /// Get interview tips for a specific topic
-  Future<String> getInterviewTips(String topic) async {
+  /// Generate a practice question
+  Future<String> generatePracticeQuestion(String topic, String difficulty) async {
     final question = '''
-What are the most important things to know about $topic for technical interviews?
+Generate a $difficulty level practice question on "$topic" for the $_currentCourse course.
 
-Please provide:
-1. Key concepts to master
-2. Common interview questions
-3. Problem-solving patterns
-4. Tips for answering confidently
+Include:
+1. The problem statement
+2. Sample input/output (if applicable)
+3. Hints
 ''';
     
     return await sendMessage(question);
@@ -179,9 +332,15 @@ Please provide:
   /// Start a new chat session (reset history)
   void resetChat() {
     if (_initialized) {
-      _chat = _model.startChat(history: [
-        Content.text(_getSystemPrompt()),
-      ]);
+      _chatHistory.clear();
+      _chatHistory.add({
+        'role': 'user',
+        'parts': [{'text': _getSystemPrompt(_currentCourse)}],
+      });
+      _chatHistory.add({
+        'role': 'model',
+        'parts': [{'text': 'Chat reset! I\'m ready to help you again. Ask me anything!'}],
+      });
       print('🔄 Chat session reset');
     }
   }
