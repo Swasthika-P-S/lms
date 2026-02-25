@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/course.dart';
 import '../utils/colors.dart';
+import 'package:learnhub/providers/locale_provider.dart';
 
 class CourseCard extends StatelessWidget {
   final Course course;
@@ -12,6 +14,7 @@ class CourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final loc = Provider.of<LocaleProvider>(context);
     
     return GestureDetector(
       onTap: onTap,
@@ -88,8 +91,8 @@ class CourseCard extends StatelessWidget {
                       color: AppColors.accent,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      'NEW',
+                    child: Text(
+                      loc.t('new_filter').toUpperCase(),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -109,7 +112,7 @@ class CourseCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${course.totalLessons} lessons',
+                  '${course.totalLessons} ${loc.t('lessons')}',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.getTextSecondary(context),

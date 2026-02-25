@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/course.dart';
 import '../services/course_service.dart';
 import '../widgets/course_card.dart';
 import '../widgets/filter_chips.dart';
 import '../utils/colors.dart';
 import 'course_detail_screen.dart';
+import 'package:learnhub/providers/locale_provider.dart';
 
 class CourseListingScreen extends StatefulWidget {
   const CourseListingScreen({Key? key}) : super(key: key);
@@ -60,6 +62,7 @@ class _CourseListingScreenState extends State<CourseListingScreen> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final loc = Provider.of<LocaleProvider>(context);
     
     return Scaffold(
       backgroundColor: AppColors.getBackground(context),
@@ -68,7 +71,7 @@ class _CourseListingScreenState extends State<CourseListingScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
-          'Courses',
+          loc.t('courses'),
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -103,11 +106,33 @@ class _CourseListingScreenState extends State<CourseListingScreen> {
       body: Column(
         children: [
           FilterChips(
-            filters: filters,
-            selectedFilter: selectedFilter,
-            onFilterSelected: (filter) {
+            filters: filters.map((f) {
+              switch (f) {
+                case 'All': return loc.t('all');
+                case 'Enrolled': return loc.t('enrolled');
+                case 'New': return loc.t('new_filter');
+                case 'Popular': return loc.t('popular');
+                default: return f;
+              }
+            }).toList(),
+            selectedFilter: () {
+              switch (selectedFilter) {
+                case 'All': return loc.t('all');
+                case 'Enrolled': return loc.t('enrolled');
+                case 'New': return loc.t('new_filter');
+                case 'Popular': return loc.t('popular');
+                default: return selectedFilter;
+              }
+            }(),
+            onFilterSelected: (displayLabel) {
+              // Map translated label back to English key
+              String key = 'All';
+              if (displayLabel == loc.t('all')) key = 'All';
+              else if (displayLabel == loc.t('enrolled')) key = 'Enrolled';
+              else if (displayLabel == loc.t('new_filter')) key = 'New';
+              else if (displayLabel == loc.t('popular')) key = 'Popular';
               setState(() {
-                selectedFilter = filter;
+                selectedFilter = key;
                 _filterCourses();
               });
             },
@@ -133,7 +158,7 @@ class _CourseListingScreenState extends State<CourseListingScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No courses found',
+                              loc.t('no_courses_found'),
                               style: TextStyle(
                                 fontSize: 18,
                                 color: AppColors.getTextPrimary(context),
@@ -142,7 +167,7 @@ class _CourseListingScreenState extends State<CourseListingScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Try changing your filter',
+                              loc.t('try_changing_filter'),
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppColors.getTextSecondary(context),

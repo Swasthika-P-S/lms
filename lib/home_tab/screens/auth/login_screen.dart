@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:learnhub/providers/firebase_auth_provider.dart';
+import 'package:learnhub/providers/locale_provider.dart';
 import 'package:learnhub/home_tab/screens/providers/theme_provider.dart';
 import 'package:learnhub/home_tab/utils/theme.dart';
 import 'package:learnhub/home_tab/screens/auth/register_screen.dart';
@@ -82,6 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeProvider = context.watch<ThemeProvider>();
+    final loc = context.watch<LocaleProvider>();
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -210,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             
                             // Title
                             Text(
-                              'Learning Management System',
+                              loc.t('learning_management_system'),
                               style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
@@ -248,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 16),
                                   child: Text(
-                                    'OR',
+                                    loc.t('or'),
                                     style: TextStyle(
                                       color: isDark ? Colors.grey[500] : Colors.grey[600],
                                       fontWeight: FontWeight.w600,
@@ -272,12 +274,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             // Email Field
                             _buildInputField(
                               controller: _emailController,
-                              label: 'Email Address',
+                              label: loc.t('email_label'),
                               icon: Icons.email_outlined,
                               isDark: isDark,
                               keyboardType: TextInputType.emailAddress,
                               validator: (v) => v == null || !v.contains('@')
-                                  ? 'Enter a valid email'
+                                  ? loc.t('please_enter_valid_email')
                                   : null,
                             ),
                             const SizedBox(height: 20),
@@ -285,7 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             // Password Field
                             _buildInputField(
                               controller: _passwordController,
-                              label: 'Password',
+                              label: loc.t('password_label'),
                               icon: Icons.lock_outline,
                               isDark: isDark,
                               obscureText: _obscurePassword,
@@ -303,7 +305,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                               ),
                               validator: (v) =>
-                                  v == null || v.length < 6 ? 'Minimum 6 characters' : null,
+                                  v == null || v.length < 6 ? loc.t('password_min_length') : null,
                             ),
                             const SizedBox(height: 32),
                             
@@ -317,7 +319,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  "Don't have an account? ",
+                                  loc.t('dont_have_account'),
                                   style: TextStyle(
                                     color: isDark ? Colors.grey[400] : Colors.grey[600],
                                     fontSize: 15,
@@ -338,7 +340,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   ),
                                   child: Text(
-                                    'Sign Up',
+                                    loc.t('sign_up'),
                                     style: TextStyle(
                                       color: AppTheme.primaryPurple,
                                       fontSize: 15,
@@ -365,6 +367,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildGoogleButton(bool isDark) {
+    final loc = context.read<LocaleProvider>();
     return Container(
       width: double.infinity,
       height: 58,
@@ -390,7 +393,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Icon(Icons.login, color: Colors.white, size: 24),
               ),
         label: Text(
-          _isLoading ? 'Signing in...' : 'Continue with Google',
+          _isLoading ? loc.t('loading') : loc.t('continue_with_google'),
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -412,6 +415,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildLoginButton(bool isDark) {
+    final loc = context.read<LocaleProvider>();
     return Container(
       width: double.infinity,
       height: 58,
@@ -449,8 +453,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   strokeWidth: 2.5,
                 ),
               )
-            : const Text(
-                'Login with Email',
+            : Text(
+                loc.t('login'),
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,

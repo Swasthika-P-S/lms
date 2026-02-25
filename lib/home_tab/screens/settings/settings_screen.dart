@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/theme_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/user_provider.dart';
 import '../auth/login_screen.dart';
+import 'package:learnhub/providers/locale_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,39 +18,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool notificationsEnabled = true;
 
   void _handleLogout() {
+    final loc = context.read<LocaleProvider>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
+        title: Text(loc.t('logout')),
+        content: Text(loc.t('logout_confirm')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(loc.t('cancel')),
           ),
           TextButton(
             onPressed: () {
-              // Close dialog
               Navigator.pop(context);
-              
-              // Logout from providers
               final authProvider = context.read<AuthProvider>();
               final userProvider = context.read<UserProvider>();
-              
               authProvider.logout();
               userProvider.clearUser();
-              
-              // Navigate to login screen and remove all previous routes
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
                   builder: (context) => const LoginScreen(),
                 ),
-                (route) => false, // Remove all routes
+                (route) => false,
               );
             },
-            child: const Text(
-              'Logout',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              loc.t('logout'),
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -61,10 +57,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final loc = context.watch<LocaleProvider>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(loc.t('settings')),
         automaticallyImplyLeading: false,
       ),
       body: ListView(
@@ -72,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           // ===== APP PREFERENCES =====
           Text(
-            'App Preferences',
+            loc.t('app_preferences'),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -81,11 +78,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
 
-          // 🌙 Dark Mode Toggle
-          SwitchListTile(
-            title: const Text('Dark Mode'),
+          // ðŸŒ Language Toggle
+          ListTile(
+            leading: const Icon(Icons.language),
+            title: Text(loc.t('language')),
             subtitle: Text(
-              isDarkMode ? 'Switch to light mode' : 'Switch to dark mode',
+              loc.isHindi ? loc.t('language_hindi') : loc.t('language_english'),
+              style: TextStyle(
+                fontSize: 12,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+            ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: DropdownButton<String>(
+                value: loc.locale,
+                underline: const SizedBox(),
+                isDense: true,
+                items: const [
+                  DropdownMenuItem(value: 'en', child: Text('English')),
+                  DropdownMenuItem(value: 'hi', child: Text('\u0939\u093f\u0902\u0926\u0940')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    loc.switchLocale(value);
+                  }
+                },
+              ),
+            ),
+          ),
+
+          // ðŸŒ™ Dark Mode Toggle
+          SwitchListTile(
+            title: Text(loc.t('dark_mode')),
+            subtitle: Text(
+              isDarkMode ? loc.t('switch_to_light') : loc.t('switch_to_dark'),
               style: TextStyle(
                 fontSize: 12,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -98,11 +129,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
 
-          // 🔔 Notifications Toggle
+          // ðŸ”” Notifications Toggle
           SwitchListTile(
-            title: const Text('Notifications'),
+            title: Text(loc.t('notifications')),
             subtitle: Text(
-              notificationsEnabled ? 'Enabled' : 'Disabled',
+              notificationsEnabled ? loc.t('enabled') : loc.t('disabled'),
               style: TextStyle(
                 fontSize: 12,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
@@ -120,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // ===== ACCOUNT =====
           Text(
-            'Account',
+            loc.t('account'),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -131,14 +162,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.person),
-            title: const Text('Edit Profile'),
-            subtitle: const Text('Update your personal information'),
+            title: Text(loc.t('edit_profile')),
+            subtitle: Text(loc.t('update_personal_info')),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              // Navigate to edit profile
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Edit Profile feature coming soon!'),
+                SnackBar(
+                  content: Text('${loc.t('edit_profile')} ${loc.t('feature_coming_soon')}'),
                 ),
               );
             },
@@ -146,14 +176,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.lock),
-            title: const Text('Change Password'),
-            subtitle: const Text('Update your password'),
+            title: Text(loc.t('change_password')),
+            subtitle: Text(loc.t('update_password')),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              // Navigate to change password
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Change Password feature coming soon!'),
+                SnackBar(
+                  content: Text('${loc.t('change_password')} ${loc.t('feature_coming_soon')}'),
                 ),
               );
             },
@@ -163,7 +192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // ===== LEARNING =====
           Text(
-            'Learning',
+            loc.t('learning'),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -174,13 +203,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.school),
-            title: const Text('Study Goals'),
-            subtitle: const Text('Set daily learning targets'),
+            title: Text(loc.t('study_goals')),
+            subtitle: Text(loc.t('set_daily_targets')),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Study Goals feature coming soon!'),
+                SnackBar(
+                  content: Text('${loc.t('study_goals')} ${loc.t('feature_coming_soon')}'),
                 ),
               );
             },
@@ -188,13 +217,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.trending_up),
-            title: const Text('Progress Tracking'),
-            subtitle: const Text('View your learning analytics'),
+            title: Text(loc.t('progress_tracking')),
+            subtitle: Text(loc.t('view_analytics')),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Progress Tracking feature coming soon!'),
+                SnackBar(
+                  content: Text('${loc.t('progress_tracking')} ${loc.t('feature_coming_soon')}'),
                 ),
               );
             },
@@ -204,7 +233,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // ===== ABOUT =====
           Text(
-            'About',
+            loc.t('about'),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -213,20 +242,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
 
-          const ListTile(
-            leading: Icon(Icons.info),
-            title: Text('LearnHub LMS'),
-            subtitle: Text('Version 1.0.0 • Build 2026.01'),
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: Text(loc.t('learnhub_lms')),
+            subtitle: const Text('Version 1.0.0 â€¢ Build 2026.01'),
           ),
 
           ListTile(
             leading: const Icon(Icons.privacy_tip),
-            title: const Text('Privacy Policy'),
+            title: Text(loc.t('privacy_policy')),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Privacy Policy feature coming soon!'),
+                SnackBar(
+                  content: Text('${loc.t('privacy_policy')} ${loc.t('feature_coming_soon')}'),
                 ),
               );
             },
@@ -234,12 +263,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.description),
-            title: const Text('Terms of Service'),
+            title: Text(loc.t('terms_of_service')),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Terms of Service feature coming soon!'),
+                SnackBar(
+                  content: Text('${loc.t('terms_of_service')} ${loc.t('feature_coming_soon')}'),
                 ),
               );
             },
@@ -248,13 +277,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(),
           const SizedBox(height: 8),
 
-          // 🚪 Logout Button
+          // ðŸšª Logout Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: ElevatedButton.icon(
               onPressed: _handleLogout,
               icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
+              label: Text(loc.t('logout')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 219, 78, 63),
                 foregroundColor: Colors.white,

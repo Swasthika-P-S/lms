@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:learnhub/providers/firebase_auth_provider.dart';
+import 'package:learnhub/providers/locale_provider.dart';
 import 'package:learnhub/home_tab/utils/theme.dart';
 import 'package:learnhub/home_tab/widgets/dashboard_card.dart';
 import 'package:learnhub/home_tab/widgets/stat_card.dart';
@@ -18,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loc = Provider.of<LocaleProvider>(context);
     
     return Scaffold(
       body: Container(
@@ -62,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Hello,',
+                                loc.t('hello'),
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.grey.shade400,
@@ -101,9 +103,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Keep Learning!',
-                            style: TextStyle(
+                          Text(
+                            loc.t('keep_learning'),
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
@@ -113,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Complete your daily goals and earn achievements',
+                                  loc.t('complete_daily_goals'),
                                   style: TextStyle(
                                     color: Colors.grey.shade400,
                                     fontSize: 14,
@@ -137,8 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       color: Colors.white,
                                     ),
                                     const SizedBox(width: 4),
-                                    const Text(
-                                      'Goal Achieved',
+                                    Text(
+                                      loc.t('goal_achieved'),
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 12,
@@ -165,8 +167,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Quick Actions',
+                          Text(
+                            loc.t('quick_actions'),
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -178,14 +180,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(
                                 child: DashboardCard(
                                   icon: Icons.book,
-                                  label: 'Browse Courses',
+                                  label: loc.t('browse_courses'),
                                   gradient: const LinearGradient(
                                     colors: [
                                       Color(0xFFFF6B35),
                                       Color(0xFFFF8E53),
                                     ],
                                   ),
-                                  badge: '7 Days',
+                                  badge: '7 ${loc.t('days')}',
                                   onTap: () {},
                                 ),
                               ),
@@ -193,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Expanded(
                                 child: DashboardCard(
                                   icon: Icons.bar_chart,
-                                  label: 'New Course Available!',
+                                  label: loc.t('new_course_available'),
                                   subtitle: 'Advanced Flutter\nTechniques',
                                   gradient: const LinearGradient(
                                     colors: [
@@ -213,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: StatCard(
                                   icon: Icons.menu_book,
                                   value: (user?.coursesCompleted ?? 0).toString(),
-                                  label: 'Courses',
+                                  label: loc.t('courses_label'),
                                   color: AppTheme.primaryPurple,
                                 ),
                               ),
@@ -222,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: StatCard(
                                   icon: Icons.access_time,
                                   value: (user?.totalHours ?? 0).toString(),
-                                  label: 'Hours',
+                                  label: loc.t('hours_label'),
                                   color: AppTheme.accentPink,
                                 ),
                               ),
@@ -231,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: StatCard(
                                   icon: Icons.trending_up,
                                   value: '${(user?.progressPercentage ?? 0).toInt()}%',
-                                  label: 'Progress',
+                                  label: loc.t('progress_label'),
                                   color: AppTheme.accentCyan,
                                   showProgress: true,
                                   progress: (user?.progressPercentage ?? 0) / 100,
@@ -252,8 +254,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Categories',
+                          Text(
+                            loc.t('categories'),
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -265,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 const Icon(Icons.add, size: 20),
                                 const SizedBox(width: 4),
-                                const Text('New Course'),
+                                Text(loc.t('new_course')),
                               ],
                             ),
                           ),

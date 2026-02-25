@@ -19,6 +19,7 @@ import 'package:learnhub/screens/admin/admin_dashboard_screen.dart';
 import 'services/firebase_service.dart';
 import 'providers/firebase_auth_provider.dart';
 import 'providers/chatbot_provider.dart';
+import 'providers/locale_provider.dart';
 import 'services/data_seeder.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -54,11 +55,12 @@ class LearnHubApp extends StatelessWidget {
         // Firebase providers
         ChangeNotifierProvider(create: (_) => FirebaseAuthProvider()),
         ChangeNotifierProvider(create: (_) => ChatbotProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
+      child: Consumer2<ThemeProvider, LocaleProvider>(
+        builder: (context, themeProvider, localeProvider, _) {
           return MaterialApp(
-            title: 'Learning Management System',
+            title: localeProvider.t('learning_management_system'),
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
@@ -118,6 +120,7 @@ class _MainScreenState extends State<MainScreen> {
     // Get user info from UserProvider (not AuthProvider)
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userName = userProvider.userModel?.name ?? firebaseAuthProvider.user?.displayName ?? 'User';
+    final loc = Provider.of<LocaleProvider>(context);
     
     // Check if user is admin
     final isAdmin = firebaseAuthProvider.isAdmin;
@@ -148,7 +151,7 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: isDarkMode ? AppColors.card : Colors.white,
         elevation: 0,
         title: Text(
-          isAdmin ? 'Admin Panel' : 'LMS',
+          isAdmin ? loc.t('admin_panel') : loc.t('app_name'),
           style: TextStyle(
             color: AppColors.getTextPrimary(context),
             fontWeight: FontWeight.bold,
@@ -187,17 +190,17 @@ class _MainScreenState extends State<MainScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: isAdmin
                   ? [
-                      _buildNavItem(Icons.dashboard_rounded, 'Dashboard', 0, isDarkMode),
-                      _buildNavItem(Icons.home_rounded, 'Home', 1, isDarkMode),
-                      _buildNavItem(Icons.settings_rounded, 'Settings', 2, isDarkMode),
+                      _buildNavItem(Icons.dashboard_rounded, loc.t('nav_dashboard'), 0, isDarkMode),
+                      _buildNavItem(Icons.home_rounded, loc.t('nav_home'), 1, isDarkMode),
+                      _buildNavItem(Icons.settings_rounded, loc.t('nav_settings'), 2, isDarkMode),
                     ]
                   : [
-                      _buildNavItem(Icons.home_rounded, 'Home', 0, isDarkMode),
-                      _buildNavItem(Icons.school_rounded, 'Courses', 1, isDarkMode),
-                      _buildNavItem(Icons.book_rounded, 'Quizzes', 2, isDarkMode),
-                      _buildNavItem(Icons.assignment_rounded, 'Tasks', 3, isDarkMode),
-                      _buildNavItem(Icons.person_rounded, 'Profile', 4, isDarkMode),
-                      _buildNavItem(Icons.settings_rounded, 'Settings', 5, isDarkMode),
+                      _buildNavItem(Icons.home_rounded, loc.t('nav_home'), 0, isDarkMode),
+                      _buildNavItem(Icons.school_rounded, loc.t('nav_courses'), 1, isDarkMode),
+                      _buildNavItem(Icons.book_rounded, loc.t('nav_quizzes'), 2, isDarkMode),
+                      _buildNavItem(Icons.assignment_rounded, loc.t('nav_tasks'), 3, isDarkMode),
+                      _buildNavItem(Icons.person_rounded, loc.t('nav_profile'), 4, isDarkMode),
+                      _buildNavItem(Icons.settings_rounded, loc.t('nav_settings'), 5, isDarkMode),
                     ],
             ),
           ),
