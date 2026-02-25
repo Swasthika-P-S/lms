@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/chatbot_service.dart';
 
-/// Provider for Gemini AI Chatbot
+/// Provider for Gemini AI Chatbot with course-specific context
 class ChatbotProvider extends ChangeNotifier {
   final ChatbotService _chatbotService = ChatbotService();
   
@@ -9,11 +9,54 @@ class ChatbotProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isInitialized = false;
   String? _errorMessage;
+  String _selectedCourse = 'General';
   
   List<ChatMessage> get messages => _messages;
   bool get isLoading => _isLoading;
   bool get isInitialized => _isInitialized;
   String? get errorMessage => _errorMessage;
+  String get selectedCourse => _selectedCourse;
+  
+  /// Available courses
+  static const List<String> courses = ['General', 'DSA', 'C', 'OOPs'];
+  
+  /// Quick prompts per course
+  static const Map<String, List<String>> quickPrompts = {
+    'General': [
+      'How do I start learning programming?',
+      'What topics should I focus on?',
+      'Explain Big O notation',
+      'Compare arrays vs linked lists',
+    ],
+    'DSA': [
+      'Explain Binary Search with an example',
+      'How does a Stack work?',
+      'What is Dynamic Programming?',
+      'Difference between BFS and DFS',
+      'Explain time complexity of sorting',
+      'What is a Hash Table?',
+    ],
+    'C': [
+      'What are pointers in C?',
+      'Explain malloc vs calloc',
+      'How does a struct work?',
+      'Difference between array and pointer',
+      'What is a dangling pointer?',
+      'Explain file I/O in C',
+    ],
+    'OOPs': [
+      'Explain the 4 pillars of OOPs',
+      'What is polymorphism?',
+      'Difference between abstract class and interface',
+      'Explain method overloading vs overriding',
+      'What are SOLID principles?',
+      'When to use inheritance vs composition?',
+    ],
+  };
+  
+  /// Get quick prompts for current course
+  List<String> get currentQuickPrompts => 
+      quickPrompts[_selectedCourse] ?? quickPrompts['General']!;
   
   /// Initialize chatbot with API key
   Future<void> initialize(String apiKey) async {
@@ -26,6 +69,34 @@ class ChatbotProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = 'Failed to initialize chatbot: $e';
       notifyListeners();
+    }
+  }
+  
+  /// Switch course context
+  void switchCourse(String course) {
+    if (_selectedCourse == course) return;
+    _selectedCourse = course;
+    _chatbotService.switchCourse(course);
+    _messages.clear();
+    _messages.add(ChatMessage(
+      text: _getWelcomeMessage(course),
+      isUser: false,
+      timestamp: DateTime.now(),
+      isSystemMessage: true,
+    ));
+    notifyListeners();
+  }
+
+  String _getWelcomeMessage(String course) {
+    switch (course) {
+      case 'DSA':
+        return '📊 **DSA Mode Active!**\n\nI\'m ready to help you with Data Structures & Algorithms. Ask me about arrays, trees, graphs, sorting, dynamic programming, and more!\n\nTry one of the quick prompts below to get started.';
+      case 'C':
+        return '⚙️ **C Programming Mode Active!**\n\nI\'m here to help you master C programming. Ask me about pointers, memory management, file handling, and more!\n\nTry one of the quick prompts below to get started.';
+      case 'OOPs':
+        return '🧩 **OOPs Mode Active!**\n\nLet\'s explore Object-Oriented Programming together. Ask me about classes, inheritance, polymorphism, design patterns, and more!\n\nTry one of the quick prompts below to get started.';
+      default:
+        return '👋 **Welcome to LearnBot!**\n\nI\'m your AI study assistant. Select a course above or ask me anything about programming!\n\nTry one of the quick prompts below to get started.';
     }
   }
   
@@ -44,14 +115,12 @@ class ChatbotProvider extends ChangeNotifier {
     ));
     notifyListeners();
     
-    // Start loading
     _isLoading = true;
     notifyListeners();
     
     try {
       final response = await _chatbotService.sendMessage(message, context: context);
       
-      // Add bot response
       _messages.add(ChatMessage(
         text: response,
         isUser: false,
@@ -75,18 +144,18 @@ class ChatbotProvider extends ChangeNotifier {
   Future<void> askCodingQuestion(String question, String language) async {
     if (!_isInitialized) return;
     
+    _messages.add(ChatMessage(
+      text: question,
+      isUser: true,
+      timestamp: DateTime.now(),
+    ));
+    notifyListeners();
+    
     _isLoading = true;
     notifyListeners();
     
     try {
       final response = await _chatbotService.askCodingQuestion(question, language);
-      
-      _messages.add(ChatMessage(
-        text: question,
-        isUser: true,
-        timestamp: DateTime.now(),
-      ));
-      
       _messages.add(ChatMessage(
         text: response,
         isUser: false,
@@ -150,11 +219,13 @@ class ChatMessage {
   final bool isUser;
   final DateTime timestamp;
   final bool isError;
+  final bool isSystemMessage;
   
   ChatMessage({
     required this.text,
     required this.isUser,
     required this.timestamp,
     this.isError = false,
+    this.isSystemMessage = false,
   });
 }

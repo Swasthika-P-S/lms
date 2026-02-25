@@ -108,7 +108,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget>
         height: 56,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.primary, AppColors.secondary],
+            colors: [AppColors.primary, AppColors.accent],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -166,7 +166,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.secondary],
+          colors: [AppColors.primary, AppColors.accent],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -420,7 +420,7 @@ class _ChatbotWidgetState extends State<ChatbotWidget>
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.secondary],
+                colors: [AppColors.primary, AppColors.accent],
               ),
               shape: BoxShape.circle,
             ),

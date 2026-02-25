@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/course.dart';
 import '../models/lesson.dart';
 import '../services/course_service.dart';
@@ -6,6 +7,8 @@ import '../services/download_service.dart';
 import '../widgets/lesson_item.dart';
 import '../utils/colors.dart';
 import 'content_viewer_screen.dart';
+import 'package:learnhub/providers/chatbot_provider.dart';
+import 'package:learnhub/home_tab/screens/chatbot/chatbot_screen.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   final Course course;
@@ -68,9 +71,28 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     _loadLessons();
   }
 
+  /// Map course title/tags to chatbot mode
+  String _getChatbotMode(Course course) {
+    final title = course.title.toLowerCase();
+    final tags = course.tags.map((t) => t.toLowerCase()).toList();
+    
+    if (title.contains('data structure') || title.contains('algorithm') ||
+        tags.contains('dsa') || tags.contains('algorithms')) {
+      return 'DSA';
+    } else if (title.contains('c programming') || title.contains('c language') ||
+        tags.contains('c') || tags.contains('c programming')) {
+      return 'C';
+    } else if (title.contains('object oriented') || title.contains('oops') || title.contains('oop') ||
+        tags.contains('oops') || tags.contains('oop') || tags.contains('object oriented')) {
+      return 'OOPs';
+    }
+    return 'General';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final chatbotMode = _getChatbotMode(widget.course);
     
     return Scaffold(
       backgroundColor: AppColors.getBackground(context),
@@ -123,6 +145,59 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           ),
         ],
       ),
+      // Course-specific chatbot FAB
+      floatingActionButton: chatbotMode != 'General' ? Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.primary, const Color(0xFF4F46E5)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withOpacity(0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              // Switch chatbot to this course's mode
+              context.read<ChatbotProvider>().switchCourse(chatbotMode);
+              
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (ctx) => DraggableScrollableSheet(
+                  initialChildSize: 0.9,
+                  minChildSize: 0.5,
+                  maxChildSize: 0.95,
+                  builder: (ctx, scrollController) => Container(
+                    decoration: BoxDecoration(
+                      color: isDarkMode ? const Color(0xFF0F0A2A) : const Color(0xFFF0F2FF),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    child: const ChatbotScreen(),
+                  ),
+                ),
+              );
+            },
+            child: const Icon(
+              Icons.smart_toy_rounded,
+              color: Colors.white,
+              size: 26,
+            ),
+          ),
+        ),
+      ) : null,
       bottomNavigationBar: _buildEnrollButton(context, isDarkMode),
     );
   }

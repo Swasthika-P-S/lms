@@ -5,8 +5,6 @@ import 'package:learnhub/providers/firebase_auth_provider.dart';
 import 'package:learnhub/home_tab/screens/providers/theme_provider.dart';
 import 'package:learnhub/home_tab/utils/theme.dart';
 import 'package:learnhub/home_tab/screens/auth/register_screen.dart';
-import 'package:learnhub/screens/test_login_screen.dart';
-import 'package:learnhub/screens/direct_firebase_test.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -33,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleEmailLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     final firebaseAuthProvider = context.read<FirebaseAuthProvider>();
@@ -42,8 +41,10 @@ class _LoginScreenState extends State<LoginScreen> {
       _passwordController.text.trim(),
     );
 
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
     if (!success && mounted) {
-      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(firebaseAuthProvider.errorMessage ?? 'Login failed'),
@@ -56,13 +57,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleGoogleSignIn() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     final firebaseAuthProvider = context.read<FirebaseAuthProvider>();
     final success = await firebaseAuthProvider.signInWithGoogle();
 
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
     if (!success && mounted) {
-      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(firebaseAuthProvider.errorMessage ?? 'Google Sign-In failed'),
@@ -345,58 +349,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                             
-                            const SizedBox(height: 16),
-                            
-                            // Test Login Button (for debugging)
-                            TextButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const TestLoginScreen(),
-                                  ),
-                                );
-                              },
-                              icon: Icon(
-                                Icons.bug_report,
-                                size: 18,
-                                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                              ),
-                              label: Text(
-                                'Quick Test Login',
-                                style: TextStyle(
-                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 8),
-                            
-                            // EMERGENCY: Direct Firebase Test
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const DirectFirebaseTestScreen(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.fire_extinguisher, color: Colors.white),
-                              label: const Text(
-                                '🚨 EMERGENCY: TEST FIREBASE NOW',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
+
                           ],
                         ),
                       ),
