@@ -10,39 +10,57 @@ service cloud.firestore {
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
+
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.token.email == 'swasthikaponnusamy05@gmail.com';
+    }
     
     // Users collection
     match /users/{userId} {
       allow read: if isSignedIn();
       allow write: if isOwner(userId);
       
-      // User progress subcollection
       match /progress/{topicId} {
         allow read: if isSignedIn();
         allow write: if isOwner(userId);
       }
       
-      // User submissions subcollection
       match /submissions/{submissionId} {
         allow read: if isSignedIn();
         allow write: if isOwner(userId);
       }
     }
     
-    // Courses collection (DSA, DBMS, OOPs, C++, Java)
+    // Courses collection (read-only content)
     match /courses/{courseId} {
       allow read: if isSignedIn();
-      allow write: if false; // Only admins via Firebase Console
+      allow write: if false;
       
-      // Topics subcollection
       match /topics/{topicId} {
         allow read: if isSignedIn();
         allow write: if false;
         
-        // Problems subcollection
         match /problems/{problemId} {
           allow read: if isSignedIn();
           allow write: if false;
+        }
+      }
+    }
+
+    // ── Quiz Courses ─────────────────────────────────────────────
+    // Admin can create/update/delete; all signed-in users can read
+    match /quiz_courses/{courseId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+
+      match /topics/{topicId} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
+
+        match /questions/{questionId} {
+          allow read: if isSignedIn();
+          allow write: if isAdmin();
         }
       }
     }
@@ -56,7 +74,7 @@ service cloud.firestore {
     // Leaderboard collection
     match /leaderboard/{entryId} {
       allow read: if isSignedIn();
-      allow write: if false; // Updated via Cloud Functions
+      allow write: if false;
     }
     
     // Chat history
@@ -70,7 +88,8 @@ service cloud.firestore {
     
     // Admin collection
     match /admin/{document=**} {
-      allow read, write: if false; // Only via Firebase Console
+      allow read, write: if false;
     }
   }
 }
+

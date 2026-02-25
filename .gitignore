@@ -53,3 +53,10 @@ lib/config/api_keys.dart
 
 # Firebase cache
 .firebase/
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Zip files
+*.zip
