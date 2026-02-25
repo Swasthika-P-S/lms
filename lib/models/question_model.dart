@@ -2,6 +2,7 @@
 class QuestionModel {
   final String id;
   final String topicId;
+  final String courseId;
   final String questionText;
   final String? codeSnippet;
   final List<String> options;
@@ -11,6 +12,7 @@ class QuestionModel {
   QuestionModel({
     required this.id,
     required this.topicId,
+    this.courseId = '',
     required this.questionText,
     this.codeSnippet,
     required this.options,
@@ -22,6 +24,7 @@ class QuestionModel {
     return QuestionModel(
       id: id,
       topicId: data['topicId'] ?? '',
+      courseId: data['courseId'] ?? '',
       questionText: data['questionText'] ?? '',
       codeSnippet: data['codeSnippet'],
       options: List<String>.from(data['options'] ?? []),
@@ -33,6 +36,7 @@ class QuestionModel {
   Map<String, dynamic> toMap() {
     return {
       'topicId': topicId,
+      'courseId': courseId,
       'questionText': questionText,
       'codeSnippet': codeSnippet,
       'options': options,

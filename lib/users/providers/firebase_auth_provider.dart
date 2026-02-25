@@ -1,0 +1,163 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/firebase_service.dart';
+import '../services/auth_service.dart';
+import '../models/user_model.dart' as model;
+import '../services/firestore_service.dart';
+
+/// Provider for Firebase Authentication state
+class FirebaseAuthProvider extends ChangeNotifier {
+  final AuthService _authService = AuthService();
+  final FirestoreService _firestoreService = FirestoreService();
+  final FirebaseService _firebaseService = FirebaseService.instance;
+  
+  User? _user;
+  model.UserModel? _userModel;
+  bool _isLoading = false;
+  String? _errorMessage;
+  
+  User? get user => _user;
+  model.UserModel? get userModel => _userModel;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  bool get isAuthenticated => _user != null;
+  String get userRole => _userModel?.role ?? 'student';
+  bool get isAdmin => _userModel?.isAdmin ?? false;
+  
+  FirebaseAuthProvider() {
+    _initAuthListener();
+  }
+  
+  /// Initialize auth state listener
+  void _initAuthListener() {
+    _authService.authStateChanges.listen((User? user) async {
+      _user = user;
+      
+      if (user != null) {
+        try {
+          // Fetch user data from Firestore with timeout
+          _userModel = await _firestoreService.getUserData(user.uid)
+              .timeout(const Duration(seconds: 20), onTimeout: () {
+                print('⚠️ Auth listener: Firestore fetch timed out. Using cached data if available.');
+                return null;
+              });
+        } catch (e) {
+          print('❌ Auth listener: Error fetching user data: $e');
+          _userModel = null;
+        }
+      } else {
+        _userModel = null;
+      }
+      
+      notifyListeners();
+    });
+  }
+  
+  /// Sign in with Google
+  Future<bool> signInWithGoogle() async {
+    _setLoading(true);
+    _errorMessage = null;
+    
+    try {
+      final userCredential = await _authService.signInWithGoogle();
+      if (userCredential?.user != null) {
+        _user = userCredential!.user;
+        // Fetch model data immediately to avoid flash of 'student' role
+        _userModel = await _firestoreService.getUserData(_user!.uid)
+            .timeout(const Duration(seconds: 10), onTimeout: () => null);
+      }
+      _setLoading(false);
+      return userCredential != null;
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+      _setLoading(false);
+      return false;
+    }
+  }
+  
+  /// Sign in with email and password
+  Future<bool> signInWithEmailPassword(String email, String password) async {
+    _setLoading(true);
+    _errorMessage = null;
+    
+    try {
+      final userCredential = await _authService.signInWithEmailPassword(email, password);
+      if (userCredential.user != null) {
+        _user = userCredential.user;
+        _userModel = await _firestoreService.getUserData(_user!.uid)
+            .timeout(const Duration(seconds: 10), onTimeout: () => null);
+      }
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+      _setLoading(false);
+      return false;
+    }
+  }
+  
+  /// Sign up with email and password
+  Future<bool> signUpWithEmailPassword(
+    String email,
+    String password,
+    String name,
+  ) async {
+    _setLoading(true);
+    _errorMessage = null;
+    
+    try {
+      await _authService.signUpWithEmailPassword(email, password, name);
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+      _setLoading(false);
+      return false;
+    }
+  }
+  
+  /// Sign out
+  Future<void> signOut() async {
+    _setLoading(true);
+    try {
+      await _authService.signOut();
+    } catch (e) {
+      _errorMessage = _getErrorMessage(e);
+    } finally {
+      _setLoading(false);
+    }
+  }
+  
+  /// Refresh user data
+  Future<void> refreshUserData() async {
+    if (_user != null) {
+      _userModel = await _firestoreService.getUserData(_user!.uid);
+      notifyListeners();
+    }
+  }
+  
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+  
+  String _getErrorMessage(dynamic error) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'user-not-found':
+          return 'No user found with this email.';
+        case 'wrong-password':
+          return 'Incorrect password.';
+        case 'email-already-in-use':
+          return 'An account already exists with this email.';
+        case 'weak-password':
+          return 'Password is too weak.';
+        case 'invalid-email':
+          return 'Invalid email address.';
+        default:
+          return 'Authentication error: ${error.message}';
+      }
+    }
+    return error.toString();
+  }
+}

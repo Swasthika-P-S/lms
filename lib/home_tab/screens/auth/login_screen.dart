@@ -5,8 +5,6 @@ import 'package:learnhub/providers/firebase_auth_provider.dart';
 import 'package:learnhub/home_tab/screens/providers/theme_provider.dart';
 import 'package:learnhub/home_tab/utils/theme.dart';
 import 'package:learnhub/home_tab/screens/auth/register_screen.dart';
-import 'package:learnhub/screens/test_login_screen.dart';
-import 'package:learnhub/screens/direct_firebase_test.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,22 +34,106 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     final firebaseAuthProvider = context.read<FirebaseAuthProvider>();
-    
+    final email = _emailController.text.trim();
+
     final success = await firebaseAuthProvider.signInWithEmailPassword(
-      _emailController.text.trim(),
+      email,
       _passwordController.text.trim(),
     );
 
     if (!success && mounted) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(firebaseAuthProvider.errorMessage ?? 'Login failed'),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
+
+      final errMsg = firebaseAuthProvider.errorMessage ?? '';
+      final isNotFound = errMsg.contains('invalid-credential') ||
+          errMsg.contains('user-not-found') ||
+          errMsg.contains('wrong-password') ||
+          errMsg.contains('INVALID_LOGIN_CREDENTIALS');
+
+      if (isNotFound) {
+        // Show friendly dialog with Google sign-in suggestion
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Row(
+              children: [
+                Icon(Icons.person_off_rounded, color: Colors.orange),
+                SizedBox(width: 10),
+                Text('Sign-In Failed'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Could not sign in as\n"$email".',
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_rounded, color: Colors.blue, size: 18),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'If you previously signed in with Google, use the "Continue with Google" button instead.',
+                          style: TextStyle(fontSize: 12, color: Colors.blue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Or create a new account if you haven\'t registered yet.',
+                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Try Again'),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6C63FF),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+                icon: const Icon(Icons.person_add_rounded, size: 18),
+                label: const Text('Sign Up'),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errMsg.isNotEmpty ? errMsg : 'Login failed. Please try again.'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
     }
   }
 
@@ -345,58 +427,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                             
-                            const SizedBox(height: 16),
-                            
-                            // Test Login Button (for debugging)
-                            TextButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const TestLoginScreen(),
-                                  ),
-                                );
-                              },
-                              icon: Icon(
-                                Icons.bug_report,
-                                size: 18,
-                                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                              ),
-                              label: Text(
-                                'Quick Test Login',
-                                style: TextStyle(
-                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            
                             const SizedBox(height: 8),
-                            
-                            // EMERGENCY: Direct Firebase Test
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const DirectFirebaseTestScreen(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.fire_extinguisher, color: Colors.white),
-                              label: const Text(
-                                '🚨 EMERGENCY: TEST FIREBASE NOW',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
                           ],
                         ),
                       ),
