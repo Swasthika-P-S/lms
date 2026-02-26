@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'models.dart';
-import 'quiz_options_screen.dart';
+import 'package:learnhub/quiz_tab/models.dart';
+import 'package:learnhub/quiz_tab/quiz_options_screen.dart';
+import 'package:learnhub/home_tab/utils/theme.dart';
 
 class CourseDetailsScreen extends StatelessWidget {
   final Course course;

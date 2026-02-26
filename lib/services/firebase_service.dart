@@ -28,12 +28,17 @@ class FirebaseService {
         options: _getFirebaseOptions(),
       );
       
-      // Enable offline persistence (disabled for Web due to known issues with multiple tabs)
-      firestore.settings = Settings(
-        persistenceEnabled: !kIsWeb,
-        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-      );
-      
+      // Enable offline persistence on all platforms
+      // On web this uses IndexedDB - helps survive brief disconnections
+      // Native platforms: enable offline persistence  
+      if (!kIsWeb) {
+        firestore.settings = const Settings(
+          persistenceEnabled: true,
+          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+        );
+      }
+      // Web: use Firestore defaults (long-polling is handled by firebase_core_web internally)
+
       _initialized = true;
       print('✅ Firebase initialized successfully');
     } catch (e) {

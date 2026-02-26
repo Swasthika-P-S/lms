@@ -22,7 +22,12 @@ class FirebaseAuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _user != null;
   String get userRole => _userModel?.role ?? 'student';
-  bool get isAdmin => _userModel?.isAdmin ?? false;
+  
+  /// ONLY this email gets admin access — checked against Firebase Auth email
+  /// (works even when Firestore is offline/unavailable)
+  static const String _adminEmail = 'swasthikaponnusamy05@gmail.com';
+  bool get isAdmin =>
+      _user?.email?.toLowerCase().trim() == _adminEmail;
   
   FirebaseAuthProvider() {
     _initAuthListener();
@@ -30,25 +35,10 @@ class FirebaseAuthProvider extends ChangeNotifier {
   
   /// Initialize auth state listener
   void _initAuthListener() {
-    _authService.authStateChanges.listen((User? user) async {
+    _authService.authStateChanges.listen((User? user) {
+      // Role is determined by email — no Firestore fetch needed at startup
       _user = user;
-      
-      if (user != null) {
-        try {
-          // Fetch user data from Firestore with timeout
-          _userModel = await _firestoreService.getUserData(user.uid)
-              .timeout(const Duration(seconds: 20), onTimeout: () {
-                print('⚠️ Auth listener: Firestore fetch timed out. Using cached data if available.');
-                return null;
-              });
-        } catch (e) {
-          print('❌ Auth listener: Error fetching user data: $e');
-          _userModel = null;
-        }
-      } else {
-        _userModel = null;
-      }
-      
+      _userModel = null; // Will be lazily fetched only when explicitly needed
       notifyListeners();
     });
   }
@@ -62,9 +52,7 @@ class FirebaseAuthProvider extends ChangeNotifier {
       final userCredential = await _authService.signInWithGoogle();
       if (userCredential?.user != null) {
         _user = userCredential!.user;
-        // Fetch model data immediately to avoid flash of 'student' role
-        _userModel = await _firestoreService.getUserData(_user!.uid)
-            .timeout(const Duration(seconds: 10), onTimeout: () => null);
+        // Role is email-based — no Firestore fetch needed
       }
       _setLoading(false);
       return userCredential != null;
@@ -84,8 +72,7 @@ class FirebaseAuthProvider extends ChangeNotifier {
       final userCredential = await _authService.signInWithEmailPassword(email, password);
       if (userCredential.user != null) {
         _user = userCredential.user;
-        _userModel = await _firestoreService.getUserData(_user!.uid)
-            .timeout(const Duration(seconds: 10), onTimeout: () => null);
+        // Role is email-based — no Firestore fetch needed
       }
       _setLoading(false);
       return true;

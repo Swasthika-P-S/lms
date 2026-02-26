@@ -1,54 +1,167 @@
 import 'package:flutter/material.dart';
-import 'course_details_screen.dart';
-import 'models.dart';
-import 'data.dart';
+import 'package:learnhub/services/mongo_service.dart';
+import 'package:learnhub/quiz_tab/models.dart' as quiz;
+import 'package:learnhub/models/course_model.dart' as base;
+import 'package:learnhub/quiz_tab/course_details_screen.dart';
 
-class CoursesScreen extends StatelessWidget {
+class CoursesScreen extends StatefulWidget {
   const CoursesScreen({Key? key}) : super(key: key);
+
+  @override
+  State<CoursesScreen> createState() => _CoursesScreenState();
+}
+
+class _CoursesScreenState extends State<CoursesScreen> {
+  List<quiz.Course> _courses = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      // 1. Fetch all CourseModels from MongoDB
+      final List<base.CourseModel> courseModels = await MongoService.getCourses();
+      
+      List<quiz.Course> dynamicCourses = [];
+
+      // 2. For each course, fetch its topics
+      for (var raw in courseModels) {
+        print('🔍 Fetching topics for course: ${raw.id} (${raw.title})');
+        final List<base.Topic> rawTopics = await MongoService.getTopics(raw.id);
+        print('✅ Fetched ${rawTopics.length} topics');
+        
+        // 3. Map base.Topic to quiz.Topic
+        final List<quiz.Topic> quizTopics = rawTopics.map<quiz.Topic>((t) => quiz.Topic.fromMap({
+          'id': t.id,
+          'name': t.name,
+          'description': t.description,
+          'totalQuestions': 10,
+          'completedQuestions': 0,
+          'quizTaken': false,
+        })).toList();
+
+        print('📦 Mapped to ${quizTopics.length} quiz topics');
+
+        // 4. Map base.CourseModel to quiz.Course
+        dynamicCourses.add(quiz.Course.fromMap({
+          'courseId': raw.id,
+          'title': raw.title,
+          'description': raw.description,
+          'icon': raw.icon,
+          'color': raw.color,
+        }, topics: quizTopics));
+      }
+
+      if (mounted) {
+        setState(() {
+          _courses = dynamicCourses;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Error loading courses: $e';
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
+      backgroundColor: isDarkMode ? const Color(0xFF0A0E27) : Colors.grey[50],
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Quiz Center',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.white : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Test your knowledge across different subjects',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 30),
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 15,
-                    mainAxisSpacing: 15,
-                    childAspectRatio: 1.3,
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Quiz Center',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Select a course to test your knowledge',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
-                  itemCount: coursesData.length,
-                  itemBuilder: (context, index) {
-                    final course = coursesData[index];
-                    return _buildCourseCard(context, course);
-                  },
                 ),
               ),
+              if (_isLoading)
+                const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_error != null)
+                SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(_error!, textAlign: TextAlign.center),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadData,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else if (_courses.isEmpty)
+                const SliverFillRemaining(
+                  child: Center(child: Text('No courses found.')),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.all(20),
+                  sliver: SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 20,
+                      crossAxisSpacing: 20,
+                      childAspectRatio: 0.85,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return _buildCourseCard(_courses[index], isDarkMode);
+                      },
+                      childCount: _courses.length,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -56,8 +169,8 @@ class CoursesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCourseCard(BuildContext context, Course course) {
-    return GestureDetector(
+  Widget _buildCourseCard(quiz.Course course, bool isDarkMode) {
+    return InkWell(
       onTap: () {
         Navigator.push(
           context,
@@ -66,15 +179,15 @@ class CoursesScreen extends StatelessWidget {
           ),
         );
       },
+      borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: course.gradientColors,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
               color: course.gradientColors[0].withOpacity(0.3),
@@ -83,66 +196,58 @@ class CoursesScreen extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Stack(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(course.icon, color: Colors.white, size: 20),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.white.withOpacity(0.7),
-                  size: 22,
-                ),
-              ],
+            Positioned(
+              right: -20,
+              bottom: -20,
+              child: Icon(
+                course.icon,
+                size: 100,
+                color: Colors.white.withOpacity(0.15),
+              ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  course.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  course.fullName,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 12,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '${course.topics.length} Topics',
-                    style: const TextStyle(
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      course.icon,
                       color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                      size: 28,
                     ),
                   ),
-                ),
-              ],
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        course.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${course.topics.length} Topics',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),

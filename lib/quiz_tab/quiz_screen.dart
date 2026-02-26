@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:learnhub/models/question_model.dart';
-import 'package:learnhub/services/firestore_service.dart';
+import 'package:learnhub/services/mongo_service.dart';
 import 'package:learnhub/providers/firebase_auth_provider.dart';
 import 'package:learnhub/quiz_tab/models.dart';
 import 'package:learnhub/home_tab/utils/theme.dart';
 import 'package:learnhub/services/data_seeder.dart';
+import 'package:learnhub/quiz_tab/quiz_review_screen.dart';
 
 class QuizScreen extends StatefulWidget {
   final Topic topic;
@@ -22,7 +23,6 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  final FirestoreService _firestoreService = FirestoreService();
   final PageController _pageController = PageController();
   
   List<QuestionModel> _questions = [];
@@ -46,7 +46,8 @@ class _QuizScreenState extends State<QuizScreen> {
     });
     
     try {
-      final questions = await _firestoreService.getQuestions(widget.topic.id);
+      // Fetch from MongoDB instead of Firestore
+      final questions = await MongoService.getQuestions(widget.topic.id);
       if (mounted) {
         setState(() {
           _questions = questions;
@@ -56,9 +57,7 @@ class _QuizScreenState extends State<QuizScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString().contains('timeout') 
-              ? 'Loading timed out. Please check your connection.' 
-              : 'Error loading questions: $e';
+          _errorMessage = 'MongoDB Error: $e';
           _isLoading = false;
         });
       }
@@ -100,7 +99,11 @@ class _QuizScreenState extends State<QuizScreen> {
       _isFinished = true;
     });
 
-    // Submit result to Firebase
+    // Save status for review
+    MongoService.saveQuizResults(widget.topic.id, _selectedAnswers);
+
+    // Submit result to Firebase (Disabled during MongoDB migration)
+    /*
     final authProvider = Provider.of<FirebaseAuthProvider>(context, listen: false);
     if (authProvider.isAuthenticated) {
       _firestoreService.submitQuizResult(
@@ -109,6 +112,7 @@ class _QuizScreenState extends State<QuizScreen> {
         percentage,
       );
     }
+    */
   }
 
   @override
@@ -143,7 +147,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   onPressed: () async {
                     setState(() => _isLoading = true);
                     try {
-                      await DataSeeder.seedDsaQuizzes();
+                      await MongoService.seedDatabase();
                       await _loadQuestions();
                     } catch (e) {
                       setState(() => _errorMessage = 'Seeding failed: $e');
@@ -469,6 +473,40 @@ class _QuizScreenState extends State<QuizScreen> {
                   child: const Text(
                     'Back to Topics',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => QuizReviewScreen(
+                          questions: _questions,
+                          userAnswers: _selectedAnswers,
+                          course: widget.course,
+                          topic: widget.topic,
+                        ),
+                      ),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: widget.course.gradientColors[0]),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    'Review Detailed Answers',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: widget.course.gradientColors[0],
+                    ),
                   ),
                 ),
               ),
