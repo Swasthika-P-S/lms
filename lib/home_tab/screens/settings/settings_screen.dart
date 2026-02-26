@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/user_provider.dart';
+import '../auth/login_screen.dart';
+import 'package:learnhub/providers/locale_provider.dart';
 import '../../../../providers/firebase_auth_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -97,6 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
+    final loc = context.watch<LocaleProvider>();
     final isDark = themeProvider.themeMode == ThemeMode.dark;
     final auth = context.watch<FirebaseAuthProvider>();
     final email = auth.user?.email ?? '';
@@ -133,6 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               borderRadius: BorderRadius.circular(18),
             ),
+
             child: Row(
               children: [
                 CircleAvatar(
@@ -166,8 +170,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
 
+
           // ── App Preferences ────────────────────────────────────────
-          _sectionLabel('App Preferences', isDark),
+          _sectionLabel(loc.t('app_preferences'), isDark),
           Container(
             decoration: BoxDecoration(
               color: cardBg,
@@ -180,6 +185,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             child: Column(
               children: [
+                // 🌍 Language Toggle (Added from multilanguagesupport)
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.language_rounded, color: Colors.blue, size: 20),
+                  ),
+                  title: Text(loc.t('language'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(
+                    loc.isHindi ? loc.t('language_hindi') : loc.t('language_english'),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  ),
+                  trailing: DropdownButton<String>(
+                    value: loc.locale,
+                    underline: const SizedBox(),
+                    isDense: true,
+                    items: const [
+                      DropdownMenuItem(value: 'en', child: Text('English')),
+                      DropdownMenuItem(value: 'hi', child: Text('\u0939\u093f\u0902\u0926\u0940')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        loc.switchLocale(value);
+                      }
+                    },
+                  ),
+                ),
+                const Divider(height: 1, indent: 60),
                 SwitchListTile(
                   secondary: Container(
                     padding: const EdgeInsets.all(8),
@@ -193,8 +229,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       size: 20,
                     ),
                   ),
-                  title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(isDark ? 'Switch to light' : 'Switch to dark',
+                  title: Text(loc.t('dark_mode'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(isDark ? loc.t('switch_to_light') : loc.t('switch_to_dark'),
                       style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                   value: isDark,
                   activeColor: const Color(0xFF6C63FF),
@@ -212,8 +248,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: const Icon(Icons.notifications_rounded,
                         color: Color(0xFF4ECDC4), size: 20),
                   ),
-                  title: const Text('Notifications', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text(notificationsEnabled ? 'Enabled' : 'Disabled',
+                  title: Text(loc.t('notifications'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(notificationsEnabled ? loc.t('enabled') : loc.t('disabled'),
                       style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                   value: notificationsEnabled,
                   activeColor: const Color(0xFF4ECDC4),
@@ -223,10 +259,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
 
+
           const SizedBox(height: 20),
 
           // ── Account ────────────────────────────────────────────────
-          _sectionLabel('Account', isDark),
+          _sectionLabel(loc.t('account'), isDark),
           Container(
             decoration: BoxDecoration(
               color: cardBg,
@@ -241,28 +278,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 _tile(
                   icon: Icons.person_rounded,
-                  title: 'Edit Profile',
-                  subtitle: 'Update your personal information',
+                  title: loc.t('edit_profile'),
+                  subtitle: loc.t('update_personal_info'),
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon!'))),
+                      SnackBar(content: Text(loc.t('feature_coming_soon')))),
                 ),
                 const Divider(height: 1, indent: 60),
                 _tile(
                   icon: Icons.lock_rounded,
-                  title: 'Change Password',
-                  subtitle: 'Update your password',
+                  title: loc.t('change_password'),
+                  subtitle: loc.t('update_password'),
                   iconColor: const Color(0xFFFFAA00),
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon!'))),
+                      SnackBar(content: Text(loc.t('feature_coming_soon')))),
                 ),
               ],
             ),
           ),
 
+
           const SizedBox(height: 20),
 
           // ── Learning ───────────────────────────────────────────────
-          _sectionLabel('Learning', isDark),
+          _sectionLabel(loc.t('learning'), isDark),
           Container(
             decoration: BoxDecoration(
               color: cardBg,
@@ -277,20 +315,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 _tile(
                   icon: Icons.school_rounded,
-                  title: 'Study Goals',
-                  subtitle: 'Set daily learning targets',
+                  title: loc.t('study_goals'),
+                  subtitle: loc.t('set_daily_targets'),
                   iconColor: const Color(0xFF4ECDC4),
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon!'))),
+                      SnackBar(content: Text(loc.t('feature_coming_soon')))),
                 ),
                 const Divider(height: 1, indent: 60),
                 _tile(
                   icon: Icons.trending_up_rounded,
-                  title: 'Progress Tracking',
-                  subtitle: 'View your learning analytics',
+                  title: loc.t('progress_tracking'),
+                  subtitle: loc.t('view_analytics'),
                   iconColor: const Color(0xFFFF6B6B),
                   onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon!'))),
+                      SnackBar(content: Text(loc.t('feature_coming_soon')))),
                 ),
               ],
             ),
@@ -298,8 +336,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 20),
 
+
           // ── About ──────────────────────────────────────────────────
-          _sectionLabel('About', isDark),
+          _sectionLabel(loc.t('about'), isDark),
           Container(
             decoration: BoxDecoration(
               color: cardBg,
@@ -314,7 +353,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 _tile(
                   icon: Icons.info_rounded,
-                  title: 'LearnHub LMS',
+                  title: loc.t('learnhub_lms'),
                   subtitle: 'Version 1.0.0 • Build 2026.01',
                   trailing: const SizedBox.shrink(),
                   iconColor: Colors.blueGrey,
@@ -322,14 +361,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Divider(height: 1, indent: 60),
                 _tile(
                   icon: Icons.privacy_tip_rounded,
-                  title: 'Privacy Policy',
+                  title: loc.t('privacy_policy'),
                   iconColor: Colors.blueGrey,
                   onTap: () {},
                 ),
                 const Divider(height: 1, indent: 60),
                 _tile(
                   icon: Icons.description_rounded,
-                  title: 'Terms of Service',
+                  title: loc.t('terms_of_service'),
                   iconColor: Colors.blueGrey,
                   onTap: () {},
                 ),
@@ -346,9 +385,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: ElevatedButton.icon(
               onPressed: _handleLogout,
               icon: const Icon(Icons.logout_rounded),
-              label: const Text(
-                'Sign Out',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              label: Text(
+                loc.t('logout'),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red.shade600,
@@ -366,6 +405,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+
 
   Widget _sectionLabel(String text, bool isDark) {
     return Padding(

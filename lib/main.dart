@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+
 import 'app_tab/utils/colors.dart';
 import 'home_tab/screens/providers/theme_provider.dart';
 import 'home_tab/screens/providers/auth_provider.dart';
@@ -15,11 +16,19 @@ import 'admin/admin_shell.dart';    // swasthikaponnusamy05@gmail.com only
 // Firebase services
 import 'services/firebase_service.dart';
 import 'providers/firebase_auth_provider.dart';
+import 'providers/locale_provider.dart';
 import 'providers/chatbot_provider.dart';
+import 'services/data_seeder.dart';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+  
+  // Initialize Firebase
   try {
     await FirebaseService.instance.initialize();
     print('✅ Firebase initialized successfully');
@@ -43,11 +52,12 @@ class LearnHubApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => FirebaseAuthProvider()),
         ChangeNotifierProvider(create: (_) => ChatbotProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
+      child: Consumer2<ThemeProvider, LocaleProvider>(
+        builder: (context, themeProvider, localeProvider, _) {
           return MaterialApp(
-            title: 'LearnHub LMS',
+            title: localeProvider.t('app_name'),
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,

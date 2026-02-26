@@ -185,7 +185,35 @@ class CourseService {
         description: 'Security threats, cryptography and network defense',
         tags: ['Security', 'Cryptography'],
       ),
-    ];
+    Course(
+      id: '10',
+      title: 'C Programming Fundamentals',
+      instructor: 'Prof. Deepak Sharma',
+      thumbnail: '⚙️',
+      progress: 0.35,
+      totalLessons: 22,
+      completedLessons: 8,
+      category: 'Computer Science',
+      isEnrolled: true,
+      duration: '11h 00m',
+      description: 'Master C programming from basics to advanced concepts',
+      tags: ['C', 'C Programming', 'Systems'],
+    ),
+    Course(
+      id: '11',
+      title: 'Object Oriented Programming',
+      instructor: 'Dr. Priya Menon',
+      thumbnail: '🧩',
+      progress: 0.25,
+      totalLessons: 20,
+      completedLessons: 5,
+      category: 'Computer Science',
+      isEnrolled: true,
+      duration: '10h 30m',
+      description: 'OOPs concepts with C++ and Java examples',
+      tags: ['OOPs', 'OOP', 'Object Oriented'],
+    ),
+  ];
   }
 
   List<Lesson> getSampleLessons(String courseId) {
