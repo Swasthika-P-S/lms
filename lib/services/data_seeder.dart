@@ -388,4 +388,137 @@ class DataSeeder {
       rethrow;
     }
   }
+
+  /// Seeds quiz data into the quiz_courses/{courseId}/topics/{topicId}/questions
+  /// structure used by the admin Manage Questions screen.
+  static Future<void> seedQuizCourses() async {
+    print('🌱 Seeding quiz_courses structure...');
+
+    // Structure: courseId → topicName → list of questions
+    final data = {
+      'dsa': {
+        'courseName': 'DSA',
+        'topics': {
+          'arrays': {
+            'name': 'Arrays',
+            'questions': [
+              {'q': 'What is the time complexity of accessing an array element by index?', 'opts': ['O(1)', 'O(n)', 'O(log n)', 'O(n²)'], 'ans': 0, 'exp': 'Array access by index is O(1) — the memory address is computed directly.'},
+              {'q': 'Which of the following describes a Dynamic Array?', 'opts': ['Fixed size at compile time', 'Can grow/shrink at runtime', 'Stores integers only', 'Non-contiguous memory'], 'ans': 1, 'exp': 'Dynamic arrays (e.g. vector in C++) resize themselves as needed.'},
+              {'q': 'In a 2D array arr[3][4], how many total elements are there?', 'opts': ['7', '12', '3', '4'], 'ans': 1, 'exp': '3 rows × 4 columns = 12 elements.'},
+              {'q': 'What happens when you access an out-of-bounds index in C++?', 'opts': ['Exception thrown', 'Array resizes', 'Undefined behaviour', 'Returns null'], 'ans': 2, 'exp': 'C++ does not do bounds checking by default.'},
+              {'q': 'What is the space complexity of an array of size n?', 'opts': ['O(1)', 'O(n)', 'O(log n)', 'O(n²)'], 'ans': 1, 'exp': 'An array of n elements occupies O(n) space.'},
+            ],
+          },
+          'linked-lists': {
+            'name': 'Linked Lists',
+            'questions': [
+              {'q': 'Time complexity to insert at the beginning of a Singly Linked List?', 'opts': ['O(1)', 'O(n)', 'O(log n)', 'O(n²)'], 'ans': 0, 'exp': 'Only pointer changes are needed — constant time.'},
+              {'q': 'What does each node in a Singly Linked List contain?', 'opts': ['Data + prev pointer', 'Data + next pointer', 'Only data', 'Data + two pointers'], 'ans': 1, 'exp': 'A singly linked list node holds data and a reference to the next node.'},
+              {'q': 'Which linked list allows traversal in both directions?', 'opts': ['Singly', 'Doubly', 'Circular', 'Both B and C'], 'ans': 3, 'exp': 'Doubly and circular doubly linked lists support bidirectional traversal.'},
+            ],
+          },
+          'stacks': {
+            'name': 'Stacks',
+            'questions': [
+              {'q': 'Which principle does a Stack follow?', 'opts': ['FIFO', 'LIFO', 'LILO', 'FILO'], 'ans': 1, 'exp': 'Stack follows Last In First Out (LIFO).'},
+              {'q': 'Which operation adds an element to a stack?', 'opts': ['enqueue', 'push', 'insert', 'add'], 'ans': 1, 'exp': 'push() adds an element to the top of the stack.'},
+              {'q': 'What is a common application of stacks?', 'opts': ['CPU Scheduling', 'Undo functionality', 'BFS traversal', 'Sorting'], 'ans': 1, 'exp': 'Undo/redo in editors uses a stack.'},
+            ],
+          },
+        },
+      },
+      'oops': {
+        'courseName': 'OOPs',
+        'topics': {
+          'classes': {
+            'name': 'Classes & Objects',
+            'questions': [
+              {'q': 'What is encapsulation in OOP?', 'opts': ['Inheriting methods', 'Hiding data within a class', 'Overriding functions', 'Multiple inheritance'], 'ans': 1, 'exp': 'Encapsulation bundles data and methods and restricts direct access.'},
+              {'q': 'Which keyword is used to create an object in Java?', 'opts': ['create', 'object', 'new', 'class'], 'ans': 2, 'exp': 'The new keyword allocates memory and creates a new object.'},
+              {'q': 'What is a constructor?', 'opts': ['A method that destroys objects', 'A special method called at object creation', 'A return type', 'A static method'], 'ans': 1, 'exp': 'A constructor initializes the object when it is created.'},
+            ],
+          },
+          'inheritance': {
+            'name': 'Inheritance',
+            'questions': [
+              {'q': 'What is inheritance in OOP?', 'opts': ['Hiding data', 'A class acquiring properties of another', 'Method overloading', 'Polymorphism'], 'ans': 1, 'exp': 'Inheritance allows a child class to inherit fields and methods from a parent class.'},
+              {'q': 'Which type of inheritance is NOT supported directly in Java?', 'opts': ['Single', 'Multi-level', 'Multiple (via classes)', 'Hierarchical'], 'ans': 2, 'exp': 'Java does not support multiple inheritance through classes — only through interfaces.'},
+            ],
+          },
+        },
+      },
+      'cpp': {
+        'courseName': 'C++',
+        'topics': {
+          'pointers': {
+            'name': 'Pointers',
+            'questions': [
+              {'q': 'What does a pointer store?', 'opts': ['A value', 'A memory address', 'A string', 'A function'], 'ans': 1, 'exp': 'A pointer holds the memory address of another variable.'},
+              {'q': 'What is a null pointer?', 'opts': ['A pointer to zero', 'A pointer that points to nothing', 'An invalid pointer', 'A pointer to a function'], 'ans': 1, 'exp': 'A null pointer does not point to any valid memory location.'},
+              {'q': 'Which operator is used to get the address of a variable?', 'opts': ['*', '&', '->', '::'], 'ans': 1, 'exp': 'The & (address-of) operator returns the memory address of a variable.'},
+            ],
+          },
+          'templates': {
+            'name': 'Templates',
+            'questions': [
+              {'q': 'What is the purpose of templates in C++?', 'opts': ['Memory management', 'Write generic type-independent code', 'Operator overloading', 'Exception handling'], 'ans': 1, 'exp': 'Templates enable generic programming — one function/class works with any data type.'},
+              {'q': 'Which keyword is used to define a template?', 'opts': ['generic', 'template', 'type', 'class'], 'ans': 1, 'exp': 'The template keyword declares a template in C++.'},
+            ],
+          },
+        },
+      },
+    };
+
+    try {
+      for (final courseEntry in data.entries) {
+        final courseId = courseEntry.key;
+        final courseData = courseEntry.value;
+        final topics = courseData['topics'] as Map<String, dynamic>;
+
+        // Create/update the course document
+        await _firestore.collection('quiz_courses').doc(courseId).set({
+          'name': courseData['courseName'],
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true)).timeout(const Duration(seconds: 10));
+
+        for (final topicEntry in topics.entries) {
+          final topicId = topicEntry.key;
+          final topicData = topicEntry.value as Map<String, dynamic>;
+          final questions = topicData['questions'] as List<dynamic>;
+
+          // Create topic document
+          final topicRef = _firestore
+              .collection('quiz_courses').doc(courseId)
+              .collection('topics').doc(topicId);
+
+          await topicRef.set({
+            'name': topicData['name'],
+            'courseId': courseId,
+            'createdAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true)).timeout(const Duration(seconds: 10));
+
+          // Add questions
+          for (int i = 0; i < questions.length; i++) {
+            final q = questions[i] as Map<String, dynamic>;
+            await topicRef.collection('questions').doc('q${i + 1}').set({
+              'questionText': q['q'],
+              'options': q['opts'],
+              'correctOptionIndex': q['ans'],
+              'explanation': q['exp'],
+              'topicId': topicId,
+              'courseId': courseId,
+              'order': i + 1,
+            }).timeout(const Duration(seconds: 10));
+          }
+
+          print('✅ Seeded $courseId/$topicId with ${questions.length} questions');
+        }
+      }
+      print('🎉 Quiz courses seeded successfully!');
+    } catch (e) {
+      print('❌ Error seeding quiz_courses: $e');
+      rethrow;
+    }
+  }
 }
+

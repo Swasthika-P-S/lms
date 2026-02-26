@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'models.dart';
-import 'quiz_screen.dart';
+import 'package:learnhub/quiz_tab/models.dart';
+import 'package:learnhub/quiz_tab/quiz_screen.dart';
+import 'package:learnhub/quiz_tab/quiz_review_screen.dart';
+import 'package:learnhub/services/mongo_service.dart';
 
 class QuizOptionsScreen extends StatelessWidget {
   final Topic topic;
@@ -220,14 +222,52 @@ class QuizOptionsScreen extends StatelessWidget {
                           gradient: const LinearGradient(
                             colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
                           ),
-                          onTap: () {
+                          onTap: () async {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Opening review...'),
+                                content: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    ),
+                                    SizedBox(width: 15),
+                                    Text('Loading quiz results...'),
+                                  ],
+                                ),
                                 duration: Duration(seconds: 1),
                                 backgroundColor: Color(0xFF4CAF50),
                               ),
                             );
+
+                            try {
+                              final questions = await MongoService.getQuestions(topic.id);
+                              final userAnswers = MongoService.getQuizResults(topic.id);
+
+                              if (context.mounted) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => QuizReviewScreen(
+                                      questions: questions,
+                                      userAnswers: userAnswers,
+                                      course: course,
+                                      topic: topic,
+                                    ),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error loading review: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
                           },
                         ),
                       if (topic.quizTaken) const SizedBox(height: 8),

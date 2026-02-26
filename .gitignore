@@ -54,6 +54,9 @@ lib/config/api_keys.dart
 # Firebase cache
 .firebase/
 
-# Environment Variables
-.env
+# Node modules
+node_modules/
+**/node_modules/
 
+# Zip files
+*.zip
