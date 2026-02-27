@@ -7,6 +7,7 @@ class LessonItem extends StatelessWidget {
   final int index;
   final VoidCallback onTap;
   final VoidCallback onDownload;
+  final bool isActive;
 
   const LessonItem({
     Key? key,
@@ -14,6 +15,7 @@ class LessonItem extends StatelessWidget {
     required this.index,
     required this.onTap,
     required this.onDownload,
+    this.isActive = false,
   }) : super(key: key);
 
   @override
@@ -26,13 +28,17 @@ class LessonItem extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.getCard(context),
+          color: isActive 
+              ? AppColors.primary.withOpacity(0.1) 
+              : AppColors.getCard(context),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isDarkMode 
-                ? Colors.white.withOpacity(0.1)
-                : Colors.grey.withOpacity(0.2),
-            width: 1,
+            color: isActive 
+                ? AppColors.primary
+                : (isDarkMode 
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.grey.withOpacity(0.2)),
+            width: isActive ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -48,7 +54,7 @@ class LessonItem extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: lesson.isCompleted
+                color: lesson.isCompleted || isActive
                     ? AppColors.primary
                     : (isDarkMode 
                         ? Colors.white.withOpacity(0.1)
@@ -58,13 +64,15 @@ class LessonItem extends StatelessWidget {
               child: Center(
                 child: lesson.isCompleted
                     ? const Icon(Icons.check, color: Colors.white, size: 20)
-                    : Text(
+                    : (isActive 
+                        ? const Icon(Icons.play_arrow, color: Colors.white, size: 20)
+                        : Text(
                         '${index + 1}',
                         style: TextStyle(
                           color: isDarkMode ? Colors.white : Colors.black87,
                           fontWeight: FontWeight.bold,
                         ),
-                      ),
+                      )),
               ),
             ),
             const SizedBox(width: 16),

@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../models/course.dart';
 import '../models/lesson.dart';
 import '../services/course_service.dart';
 import '../services/download_service.dart';
 import '../widgets/lesson_item.dart';
+import '../widgets/video_player_widget.dart';
 import '../utils/colors.dart';
 import 'content_viewer_screen.dart';
 
@@ -22,12 +23,63 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   List<Lesson> lessons = [];
   bool isLoading = true;
   late Course currentCourse;
+  Lesson? activeLesson;
+  late YoutubePlayerController _youtubeController;
 
   @override
   void initState() {
     super.initState();
     currentCourse = widget.course;
     _loadLessons();
+  }
+
+  void _initializePlayer() {
+    if (lessons.isEmpty) return;
+
+    final firstLessonUrl = activeLesson?.videoUrl ?? lessons.first.videoUrl;
+    final videoId = YoutubePlayer.convertUrlToId(firstLessonUrl);
+    
+    int? startAt;
+    int? endAt;
+    try {
+    final startAt = activeLesson?.videoUrl != null ? _getStartAtInitial() : 0;
+    final endAt = activeLesson?.videoUrl != null ? _getEndAtInitial() : null;
+
+    _youtubeController = YoutubePlayerController.fromVideoId(
+      videoId: videoId ?? '',
+      autoPlay: true,
+      startSeconds: startAt.toDouble(),
+      endSeconds: endAt?.toDouble(),
+      params: const YoutubePlayerParams(
+        showControls: false,
+        showFullscreenButton: false,
+        mute: false,
+        enableKeyboard: false,
+        pointerEvents: PointerEvents.none, // Prevent interacting with YouTube iframe directly
+      ),
+    );
+  }
+
+  int _getStartAtInitial() {
+    if (activeLesson == null) return 0;
+    try {
+      final uri = Uri.tryParse(activeLesson!.videoUrl);
+      if (uri != null && uri.queryParameters.containsKey('start')) {
+        return int.tryParse(uri.queryParameters['start']!) ?? 0;
+      }
+    } catch (_) {}
+    return 0;
+  }
+
+  int? _getEndAtInitial() {
+    if (activeLesson == null) return null;
+    try {
+      final uri = Uri.tryParse(activeLesson!.videoUrl);
+      if (uri != null && uri.queryParameters.containsKey('end')) {
+        return int.tryParse(uri.queryParameters['end']!);
+      }
+    } catch (_) {}
+    return null;
   }
 
   Future<void> _loadLessons() async {
@@ -37,10 +89,24 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
 
     // For demo purposes, using sample data
     lessons = _courseService.getSampleLessons(widget.course.id);
+    
+    // Set the first lesson as active by default if none is selected
+    if (lessons.isNotEmpty && activeLesson == null) {
+      activeLesson = lessons.first;
+      _initializePlayer();
+    }
 
     setState(() {
       isLoading = false;
     });
+  }
+
+  @override
+  void dispose() {
+    if (lessons.isNotEmpty) {
+       _youtubeController.dispose();
+    }
+    super.dispose();
   }
 
   Future<void> _enrollInCourse() async {
@@ -109,22 +175,96 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildCourseHeader(context, isDarkMode),
-          Expanded(
-            child: isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primary,
-                    ),
-                  )
-                : _buildLessonList(context),
-          ),
-        ],
+      body: SafeArea(
+        child: isLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
+                ),
+              )
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth > 800; // threshold for tablet/desktop
+                  
+                  if (isWide) {
+                    // Wide Layout: Main content on left, list on right
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                if (activeLesson != null)
+                                  Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: VideoPlayerWidget(
+                                        controller: _youtubeController,
+                                        startAt: _getStartAt(),
+                                        endAt: _getEndAt(),
+                                      ),
+                                    ),
+                                  ),
+                                _buildCourseHeader(context, isDarkMode),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(width: 1, color: isDarkMode ? Colors.white12 : Colors.black12),
+                        Expanded(
+                          flex: 1,
+                          child: _buildLessonList(context),
+                        ),
+                      ],
+                    );
+                  } else {
+                    // Narrow Layout: Stacked vertically
+                    return Column(
+                      children: [
+                        if (activeLesson != null) ...[
+                           VideoPlayerWidget(
+                             controller: _youtubeController,
+                             startAt: _getStartAt(),
+                             endAt: _getEndAt(),
+                           ),
+                        ],
+                        _buildCourseHeader(context, isDarkMode),
+                        Expanded(
+                          child: _buildLessonList(context),
+                        ),
+                      ],
+                    );
+                  }
+                },
+              ),
       ),
       bottomNavigationBar: _buildEnrollButton(context, isDarkMode),
     );
+  }
+
+  int _getStartAt() {
+    if (activeLesson == null) return 0;
+    try {
+      final uri = Uri.tryParse(activeLesson!.videoUrl);
+      if (uri != null && uri.queryParameters.containsKey('start')) {
+        return int.tryParse(uri.queryParameters['start']!) ?? 0;
+      }
+    } catch (_) {}
+    return 0;
+  }
+
+  int? _getEndAt() {
+    if (activeLesson == null) return null;
+    try {
+      final uri = Uri.tryParse(activeLesson!.videoUrl);
+      if (uri != null && uri.queryParameters.containsKey('end')) {
+        return int.tryParse(uri.queryParameters['end']!);
+      }
+    } catch (_) {}
+    return null;
   }
 
   Widget _buildCourseHeader(BuildContext context, bool isDarkMode) {
@@ -243,21 +383,48 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         padding: const EdgeInsets.all(16),
         itemCount: lessons.length,
         itemBuilder: (context, index) {
+          final lesson = lessons[index];
+          final isActive = activeLesson?.id == lesson.id;
+          
           return LessonItem(
-            lesson: lessons[index],
+            lesson: lesson,
             index: index,
+            isActive: isActive,
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ContentViewerScreen(
-                    lesson: lessons[index],
-                    course: currentCourse,
-                  ),
-                ),
-              ).then((_) => _loadLessons());
+              if (activeLesson?.id == lesson.id) return;
+
+              setState(() {
+                activeLesson = lesson;
+              });
+
+              // Extract new start and end times to tightly scope player playback
+              int startAt = 0;
+              int? endAt;
+              try {
+                final uri = Uri.tryParse(lesson.videoUrl);
+                if (uri != null) {
+                  if (uri.queryParameters.containsKey('start')) {
+                    startAt = int.tryParse(uri.queryParameters['start']!) ?? 0;
+                  }
+                  if (uri.queryParameters.containsKey('end')) {
+                    endAt = int.tryParse(uri.queryParameters['end']!);
+                  }
+                }
+              } catch (_) {}
+
+              final targetVideoId = YoutubePlayer.convertUrlToId(lesson.videoUrl);
+
+              if (targetVideoId != null) {
+                // Force the player to load exactly the bounded segment.
+                // The IFrame will automatically stop buffering/playing when hitting `endAt`.
+                _youtubeController.loadVideoById(
+        videoId: targetVideoId, 
+        startSeconds: startAt.toDouble(), 
+        endSeconds: endAt?.toDouble(),
+      );
+              }
             },
-            onDownload: () => _handleDownload(lessons[index]),
+            onDownload: () => _handleDownload(lesson),
           );
         },
       ),

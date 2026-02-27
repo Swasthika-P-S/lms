@@ -30,8 +30,25 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   void _initializeController() {
     final videoId = YoutubePlayerController.convertUrlToId(widget.videoUrl);
     
+    double? startSeconds;
+    double? endSeconds;
+
+    try {
+      final uri = Uri.tryParse(widget.videoUrl);
+      if (uri != null) {
+        if (uri.queryParameters.containsKey('start')) {
+          startSeconds = double.tryParse(uri.queryParameters['start']!);
+        }
+        if (uri.queryParameters.containsKey('end')) {
+          endSeconds = double.tryParse(uri.queryParameters['end']!);
+        }
+      }
+    } catch (_) {}
+
     _controller = YoutubePlayerController.fromVideoId(
       videoId: videoId ?? '',
+      startSeconds: startSeconds,
+      endSeconds: endSeconds,
       params: const YoutubePlayerParams(
         mute: true,
         showControls: true,
@@ -40,7 +57,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       ),
     );
     
-    debugPrint('🎬 WebView IFrame initialized with ID: $videoId from URL: ${widget.videoUrl}');
+    debugPrint('🎬 WebView IFrame initialized with ID: $videoId from URL: ${widget.videoUrl} (start: $startSeconds, end: $endSeconds)');
   }
 
   @override

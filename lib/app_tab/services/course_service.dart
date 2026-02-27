@@ -101,34 +101,7 @@ class CourseService {
         description: 'Learn OOP principles and design patterns',
         tags: ['OOP', 'Software Design'],
       ),
-    Course(
-      id: '10',
-      title: 'C Programming Fundamentals',
-      instructor: 'Prof. Deepak Sharma',
-      thumbnail: '⚙️',
-      progress: 0.35,
-      totalLessons: 22,
-      completedLessons: 8,
-      category: 'Computer Science',
-      isEnrolled: true,
-      duration: '11h 00m',
-      description: 'Master C programming from basics to advanced concepts',
-      tags: ['C', 'C Programming', 'Systems'],
-    ),
-    Course(
-      id: '11',
-      title: 'Object Oriented Programming',
-      instructor: 'Dr. Priya Menon',
-      thumbnail: '🧩',
-      progress: 0.25,
-      totalLessons: 20,
-      completedLessons: 5,
-      category: 'Computer Science',
-      isEnrolled: true,
-      duration: '10h 30m',
-      description: 'OOPs concepts with C++ and Java examples',
-      tags: ['OOPs', 'OOP', 'Object Oriented'],
-    ),
+
   ];
   }
 
@@ -139,37 +112,37 @@ class CourseService {
         Lesson(
           id: 'dsa_1',
           courseId: '1',
-          title: 'Introduction to Data Structures & Algorithms',
+          title: 'Introduction to Algorithms',
           type: 'video',
-          duration: '15:20',
+          duration: '1:57:44',
           isCompleted: false,
           isDownloaded: false,
-          videoUrl: 'https://www.youtube.com/watch?v=8hly31xKli0', // freeCodeCamp (WORKING)
-          notes: 'Algorithms and data structures are the building blocks of software.',
+          videoUrl: 'https://www.youtube.com/watch?v=8hly31xKli0&start=0&end=7064', // freeCodeCamp (WORKING)
+          notes: 'Algorithms and how they are measured and evaluated.',
           order: 1,
         ),
         Lesson(
           id: 'dsa_2',
           courseId: '1',
-          title: 'Understanding Arrays',
+          title: 'Introduction to Data Structures',
           type: 'video',
-          duration: '12:45',
+          duration: '2:13:18',
           isCompleted: false,
           isDownloaded: false,
-          videoUrl: 'https://www.youtube.com/watch?v=tP9Hqc_b41E', // GeeksforGeeks - Arrays (DSA Context)
-          notes: 'Arrays are a collection of items stored at contiguous memory locations.',
+          videoUrl: 'https://www.youtube.com/watch?v=8hly31xKli0&start=7064&end=15062', // freeCodeCamp (WORKING)
+          notes: 'Understanding arrays, linked lists, and other foundational data structures.',
           order: 2,
         ),
         Lesson(
           id: 'dsa_3',
           courseId: '1',
-          title: 'Linked Lists Explained',
+          title: 'Algorithms: Sorting and Searching',
           type: 'video',
-          duration: '18:30',
+          duration: '1:10:00',
           isCompleted: false,
           isDownloaded: false,
-          videoUrl: 'https://www.youtube.com/watch?v=njTh_9spK0w', // mycodeschool (WORKING)
-          notes: 'A linked list consists of nodes where each node contains data and a reference to the next node.',
+          videoUrl: 'https://www.youtube.com/watch?v=8hly31xKli0&start=15062', // freeCodeCamp (WORKING)
+          notes: 'A deep dive into sorting and searching algorithms like Merge Sort.',
           order: 3,
         ),
       ];
