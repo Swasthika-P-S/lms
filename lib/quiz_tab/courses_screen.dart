@@ -96,7 +96,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Quiz Center',
+                        'Quizzes',
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,

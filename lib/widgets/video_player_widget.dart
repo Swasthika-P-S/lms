@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import '../app_tab/utils/colors.dart';
 
-/// Reusable video player widget that supports YouTube URLs
+/// Reusable video player widget that supports YouTube URLs using IFrame (Best for Web)
 class VideoPlayerWidget extends StatefulWidget {
   final String videoUrl;
   final bool autoPlay;
@@ -18,83 +20,53 @@ class VideoPlayerWidget extends StatefulWidget {
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   late YoutubePlayerController _controller;
-  bool _isPlayerReady = false;
 
   @override
   void initState() {
     super.initState();
-    _initializePlayer();
+    _initializeController();
   }
 
-  void _initializePlayer() {
-    // Extract video ID from YouTube URL
-    final videoId = YoutubePlayer.convertUrlToId(widget.videoUrl);
+  void _initializeController() {
+    final videoId = YoutubePlayerController.convertUrlToId(widget.videoUrl);
     
-    if (videoId == null) {
-      print('❌ Invalid YouTube URL: ${widget.videoUrl}');
-      return;
-    }
-
-    _controller = YoutubePlayerController(
-      initialVideoId: videoId,
-      flags: YoutubePlayerFlags(
-        autoPlay: widget.autoPlay,
-        mute: false,
-        enableCaption: true,
-        controlsVisibleAtStart: true,
-        hideControls: false,
-        loop: false,
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: videoId ?? '',
+      params: const YoutubePlayerParams(
+        mute: true,
+        showControls: true,
+        showFullscreenButton: true,
+        enableJavaScript: true,
       ),
-    )..addListener(_listener);
-  }
-
-  void _listener() {
-    if (_isPlayerReady && mounted) {
-      setState(() {});
-    }
+    );
+    
+    debugPrint('🎬 WebView IFrame initialized with ID: $videoId from URL: ${widget.videoUrl}');
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return YoutubePlayerBuilder(
-      onEnterFullScreen: () {
-        // Handle fullscreen enter
-      },
-      onExitFullScreen: () {
-        // Handle fullscreen exit
-      },
-      player: YoutubePlayer(
-        controller: _controller,
-        showVideoProgressIndicator: true,
-        progressIndicatorColor: Theme.of(context).primaryColor,
-        progressColors: ProgressBarColors(
-          playedColor: Theme.of(context).primaryColor,
-          handleColor: Theme.of(context).primaryColor,
-          bufferedColor: Colors.grey,
-          backgroundColor: Colors.grey.shade300,
+    final videoId = YoutubePlayerController.convertUrlToId(widget.videoUrl);
+    
+    if (videoId == null) {
+      return Center(
+        child: Text(
+          'Invalid YouTube URL\n${widget.videoUrl}',
+          style: const TextStyle(color: Colors.white),
+          textAlign: TextAlign.center,
         ),
-        onReady: () {
-          _isPlayerReady = true;
-        },
-        onEnded: (data) {
-          // Handle video end
-          print('✅ Video ended');
-        },
-      ),
-      builder: (context, player) {
-        return Column(
-          children: [
-            player,
-            // Additional controls can be added here
-          ],
-        );
-      },
+      );
+    }
+
+    return YoutubePlayer(
+      key: ValueKey(videoId), // Force refresh when ID changes
+      controller: _controller,
+      aspectRatio: 16 / 9,
     );
   }
 }

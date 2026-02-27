@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/profile_screen.dart';
 import 'package:learnhub/quiz_tab/courses_screen.dart';
+import '../app_tab/screens/course_listing_screen.dart';
 import '../assignment_tab/ui/dashboard_screen.dart';
 import '../home_tab/screens/settings/settings_screen.dart';
 import '../widgets/chatbot_widget.dart';
@@ -28,6 +29,7 @@ class _StudentShellState extends State<StudentShell>
   static const _navItems = [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
     _NavItem(icon: Icons.school_rounded, label: 'Courses'),
+    _NavItem(icon: Icons.quiz_rounded, label: 'Quizzes'),
     _NavItem(icon: Icons.assignment_rounded, label: 'Tasks'),
     _NavItem(icon: Icons.person_rounded, label: 'Profile'),
     _NavItem(icon: Icons.settings_rounded, label: 'Settings'),
@@ -44,6 +46,7 @@ class _StudentShellState extends State<StudentShell>
 
     final pages = [
       const StudentDashboardScreen(),
+      const CourseListingScreen(),
       const CoursesScreen(),
       DashboardScreen(userName: userName, courseId: 'course_flutter_basics'),
       const StudentProfileScreen(),
@@ -70,7 +73,7 @@ class _StudentShellState extends State<StudentShell>
 
   // ── APP BAR ──────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar(bool isDark, ThemeProvider themeProvider) {
-    const titles = ['Home', 'Courses', 'Tasks', 'Profile', 'Settings'];
+    const titles = ['Home', 'Courses', 'Quizzes', 'Tasks', 'Profile', 'Settings'];
     return AppBar(
       backgroundColor: isDark ? const Color(0xFF13132A) : Colors.white,
       elevation: 0,

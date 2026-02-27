@@ -121,9 +121,10 @@ class _ContentViewerScreenState extends State<ContentViewerScreen> {
         color: Colors.black,
         child: Center(
           child: VideoPlayerWidget(
-            videoUrl: currentLesson.videoUrl,
-            autoPlay: true,
-          ),
+          key: ValueKey(currentLesson.id),
+          videoUrl: currentLesson.videoUrl,
+          autoPlay: true,
+        ),
         ),
       );
     }
