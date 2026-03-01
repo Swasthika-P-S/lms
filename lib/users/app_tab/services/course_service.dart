@@ -93,11 +93,11 @@ class CourseService {
         instructor: 'Dr. Rahul Verma',
         thumbnail: '📊',
         progress: 0.30,
-        totalLessons: 25,
-        completedLessons: 7,
+        totalLessons: 3,
+        completedLessons: 1,
         category: 'Computer Science',
         isEnrolled: true,
-        duration: '12h 20m',
+        duration: '5h 21m',
         description: 'Core data structures and algorithmic problem solving',
         tags: ['DSA', 'Algorithms'],
       ),
@@ -134,11 +134,11 @@ class CourseService {
         instructor: 'Dr. Rahul Verma',
         thumbnail: '💻',
         progress: 0.10,
-        totalLessons: 10,
+        totalLessons: 3,
         completedLessons: 1,
         category: 'Computer Science',
         isEnrolled: false,
-        duration: '4h 00m',
+        duration: '1h 45m',
         description: 'Learn C programming from scratch. Variables, loops, pointers.',
         tags: ['C', 'Programming'],
       ),
@@ -148,11 +148,11 @@ class CourseService {
         instructor: 'Prof. Ananya Iyer',
         thumbnail: '📦',
         progress: 0.00,
-        totalLessons: 12,
+        totalLessons: 3,
         completedLessons: 0,
         category: 'Computer Science',
         isEnrolled: true,
-        duration: '5h 30m',
+        duration: '1h 15m',
         description: 'Master Object Oriented Programming principles.',
         tags: ['OOPS', 'C++'],
       ),
@@ -241,7 +241,7 @@ class CourseService {
           order: 3,
         ),
       ];
-    } else if (courseId == '10' || courseId == 'cpp') { // C / C++ Programming
+    } else if (courseId == '10' || courseId == 'cpp' || courseId == 'c') { // C / C++ Programming
       return [
         Lesson(
           id: 'c_1',
@@ -280,7 +280,7 @@ class CourseService {
           order: 3,
         ),
       ];
-    } else if (courseId == '11' || courseId == 'oops') { // OOPS
+    } else if (courseId == '11' || courseId == 'oops' || courseId == 'oop') { // OOPS
       return [
         Lesson(
           id: 'oops_1',
